@@ -83,6 +83,11 @@ export function getLessonNeighbors(
   };
 }
 
+/** بررسی اینکه مقدار داده‌شده یکی از شناسه‌های مسیر معتبر است (برای صفحات داینامیک) */
+export function isPathId(value: string): value is PathId {
+  return getLearningPaths().some((p) => p.id === value);
+}
+
 /** پارامترهای استاتیک همه مسیرهای [path] برای prerender در زمان build */
 export function getAllPathIds(): PathId[] {
   return getLearningPaths().map((p) => p.id);

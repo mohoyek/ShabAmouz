@@ -1,6 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 
 /**
  * رندر بدنه درس‌ها (Markdown/MDX) با react-markdown + remark-gfm.
@@ -11,14 +11,31 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 type HeadingProps = ComponentPropsWithoutRef<"h2">;
 type TableProps = ComponentPropsWithoutRef<"table">;
 
+/**
+ * استخراج متن خام از فرزندان <pre> (المان <code> و متن‌های تو در تو).
+ * با این روش رندر بلوک کد کاملاً در override خود pre انجام می‌شود و
+ * استایل کد درون‌خطی هرگز داخل بلوک اعمال نمی‌شود.
+ */
+function extractText(node: ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (isValidElement(node)) {
+    const props = node.props as { children?: ReactNode };
+    return extractText(props.children);
+  }
+  return "";
+}
+
 function CodeBlock({ children }: { children?: ReactNode }) {
+  const code = extractText(children).replace(/\n$/, "");
   return (
     <div
       dir="ltr"
       className="ltr-content thin-scrollbar my-5 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950"
     >
       <pre className="p-4 text-left font-mono text-[13px] leading-6 text-zinc-100">
-        {children}
+        <code>{code}</code>
       </pre>
     </div>
   );
@@ -65,12 +82,8 @@ export function LessonContent({ body }: { body: string }) {
             </blockquote>
           ),
           pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
-          code: ({ className, children }) => {
-            // بلوک کد داخل pre — خروجی لاتین و LTR
-            if (className?.includes("language-")) {
-              return <code className="font-mono text-[13px] leading-6">{children}</code>;
-            }
-            // کد درون‌خطی — مثل نام دستورها
+          code: ({ children }) => {
+            // کد درون‌خطی — مثل نام دستورها؛ بلوک کد به‌طور کامل در pre رندر می‌شود
             return (
               <code
                 dir="ltr"

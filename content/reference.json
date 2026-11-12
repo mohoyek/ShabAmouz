@@ -3,7 +3,7 @@
     "id": "cmd-ping",
     "name": "ping",
     "category": "network",
-    "description": "بررسی برقراری ارتباط با یک میزبان و اندازه‌گیری زمان رفت‌وبرگشت بسته؛ اولین ابزار عیب‌یابی شبکه.",
+    "description": "بررسی برقراری ارتباط با یک میزبان (پینگ) و اندازه‌گیری زمان رفت‌وبرگشت بسته؛ اولین ابزار عیب‌یابی شبکه.",
     "syntax": "ping [-t] [-n count] <host>",
     "example": "ping google.com",
     "exampleOutput": "Pinging google.com [142.250.185.78] with 32 bytes of data:\nReply from 142.250.185.78: bytes=32 time=12ms TTL=118\nReply from 142.250.185.78: bytes=32 time=11ms TTL=118",

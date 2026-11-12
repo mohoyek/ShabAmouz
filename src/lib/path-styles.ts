@@ -17,6 +17,10 @@ export interface PathStyle {
   gradientBar: string;
   /** رنگ نوار پیشرفت */
   progressFill: string;
+  /** پس‌زمینه ریل نوار پیشرفت */
+  progressTrack: string;
+  /** کلاس literal برای override رنگ نشانگر Progress (سبک shadcn) */
+  progressIndicator: string;
 }
 
 export const pathStyles: Record<ColorKey, PathStyle> = {
@@ -27,6 +31,8 @@ export const pathStyles: Record<ColorKey, PathStyle> = {
     iconColor: "text-teal-600 dark:text-teal-400",
     gradientBar: "bg-gradient-to-l from-teal-400 to-teal-600",
     progressFill: "bg-teal-500",
+    progressTrack: "bg-teal-500/15",
+    progressIndicator: "[&>div]:bg-teal-500",
   },
   amber: {
     chipBg: "bg-amber-100 dark:bg-amber-950/60",
@@ -35,6 +41,8 @@ export const pathStyles: Record<ColorKey, PathStyle> = {
     iconColor: "text-amber-600 dark:text-amber-400",
     gradientBar: "bg-gradient-to-l from-amber-400 to-amber-600",
     progressFill: "bg-amber-500",
+    progressTrack: "bg-amber-500/15",
+    progressIndicator: "[&>div]:bg-amber-500",
   },
   violet: {
     chipBg: "bg-violet-100 dark:bg-violet-950/60",
@@ -43,6 +51,8 @@ export const pathStyles: Record<ColorKey, PathStyle> = {
     iconColor: "text-violet-600 dark:text-violet-400",
     gradientBar: "bg-gradient-to-l from-violet-400 to-violet-600",
     progressFill: "bg-violet-500",
+    progressTrack: "bg-violet-500/15",
+    progressIndicator: "[&>div]:bg-violet-500",
   },
 };
 
