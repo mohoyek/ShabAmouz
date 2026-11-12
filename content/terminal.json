@@ -1,0 +1,194 @@
+{
+  "welcome": "شب‌آموز ترمینال شبیه‌سازی‌شده — دستور help را برای دیدن فهرست دستورها تایپ کنید.",
+  "unknownCommand": "دستور '{{cmd}}' شناخته‌شده نیست. فهرست دستورهای پشتیبانی‌شده را با help ببینید.",
+  "rules": [
+    {
+      "name": "help",
+      "usage": "help",
+      "description": "نمایش فهرست دستورهای پشتیبانی‌شده در این ترمینال",
+      "matches": [
+        {
+          "args": "*",
+          "output": "دستورهای پشتیبانی‌شده (۱۰ دستور):\n\n  help       نمایش همین راهنما\n  ping       تست دسترسی به یک میزبان\n  ipconfig   نمایش پیکربندی شبکه\n  tracert    نمایش مسیر بسته‌ها تا مقصد\n  cd         جابه‌جایی بین پوشه‌ها\n  dir        فهرست فایل‌ها و پوشه‌ها\n  mkdir      ساخت پوشه جدید\n  echo       چاپ متن در ترمینال\n  cls        پاک‌کردن صفحه\n  git        دستورات گیت: status / add / commit / push\n\nنکته: این ترمینال شبیه‌سازی‌شده است و خروجی‌ها از پیش تعریف‌شده‌اند."
+        }
+      ],
+      "defaultOutput": "دستورهای پشتیبانی‌شده (۱۰ دستور):\n\n  help       نمایش همین راهنما\n  ping       تست دسترسی به یک میزبان\n  ipconfig   نمایش پیکربندی شبکه\n  tracert    نمایش مسیر بسته‌ها تا مقصد\n  cd         جابه‌جایی بین پوشه‌ها\n  dir        فهرست فایل‌ها و پوشه‌ها\n  mkdir      ساخت پوشه جدید\n  echo       چاپ متن در ترمینال\n  cls        پاک‌کردن صفحه\n  git        دستورات گیت: status / add / commit / push"
+    },
+    {
+      "name": "ping",
+      "usage": "ping <host>",
+      "description": "تست دسترسی به یک میزبان با خروجی شبیه‌سازی‌شده",
+      "matches": [
+        {
+          "args": "google.com",
+          "output": "در حال پینگ گرفتن از google.com با ۳۲ بایت داده:\n\nپاسخ از google.com [142.250.185.78]: بایت=32 زمان=12ms TTL=118\nپاسخ از google.com [142.250.185.78]: بایت=32 زمان=11ms TTL=118\nپاسخ از google.com [142.250.185.78]: بایت=32 زمان=13ms TTL=118\nپاسخ از google.com [142.250.185.78]: بایت=32 زمان=12ms TTL=118\n\nآمار پینگ: ارسال=4 دریافت=4 گم‌شده=0 (تلفات 0%)\nحداقل/میانگین/بیشینه زمان رفت‌وبرگشت: 11ms/12ms/13ms\n\nارتباط با google.com برقرار است."
+        },
+        {
+          "args": "192.168.1.1",
+          "output": "در حال پینگ گرفتن از 192.168.1.1 با ۳۲ بایت داده:\n\nپاسخ از 192.168.1.1: بایت=32 زمان=1ms TTL=64\nپاسخ از 192.168.1.1: بایت=32 زمان=1ms TTL=64\nپاسخ از 192.168.1.1: بایت=32 زمان=2ms TTL=64\nپاسخ از 192.168.1.1: بایت=32 زمان=1ms TTL=64\n\nآمار پینگ: ارسال=4 دریافت=4 گم‌شده=0 (تلفات 0%)\n\nگیت‌وی محلی در دسترس است؛ این خروجی مالکیت TTL=64 نشانه روتر داخلی است."
+        },
+        {
+          "args": "*",
+          "output": "در حال پینگ گرفتن از {{arg}} با ۳۲ بایت داده:\n\nپاسخ از {{arg}}: بایت=32 زمان=22ms TTL=115\nپاسخ از {{arg}}: بایت=32 زمان=21ms TTL=115\nپاسخ از {{arg}}: بایت=32 زمان=23ms TTL=115\nپاسخ از {{arg}}: بایت=32 زمان=22ms TTL=115\n\nآمار پینگ: ارسال=4 دریافت=4 گم‌شده=0 (تلفات 0%)\n\n(خروجی شبیه‌سازی‌شده)"
+        }
+      ],
+      "defaultOutput": "خطا: نام میزبان را وارد کنید.\nشیوه صحیح: ping <host>   مثل: ping google.com"
+    },
+    {
+      "name": "ipconfig",
+      "usage": "ipconfig [/all]",
+      "description": "نمایش پیکربندی شبکه شبیه‌سازی‌شده",
+      "matches": [
+        {
+          "args": "",
+          "output": "کارت شبکه بی‌سیم Wi-Fi:\n\n   آدرس IPv4 . . . . . . . . . . . : 192.168.1.15\n   ماسک زیرشبکه . . . . . . . . . . : 255.255.255.0\n   گیت‌وی پیش‌فرض . . . . . . . . . : 192.168.1.1\n\nکارت شبکه اترنت:\n\n   رسانه قطع است (کابل وصل نیست)"
+        },
+        {
+          "args": "/all",
+          "output": "کارت شبکه بی‌سیم Wi-Fi:\n\n   نام میزبان . . . . . . . . . . . : SHABAMOUZ-PC\n   آدرس فیزیکی (MAC) . . . . . . . : A4-B1-C2-D3-E4-F5\n   وضعیت DHCP . . . . . . . . . . . : فعال\n   آدرس IPv4 . . . . . . . . . . . : 192.168.1.15\n   ماسک زیرشبکه . . . . . . . . . . : 255.255.255.0\n   گیت‌وی پیش‌فرض . . . . . . . . . : 192.168.1.1\n   DNS سرورها . . . . . . . . . . . : 8.8.8.8\n                                       8.8.4.4"
+        },
+        {
+          "args": "*",
+          "output": "پارامتر '{{arg}}' در این شبیه‌سازی پشتیبانی نمی‌شود؛ فقط بدون پارامتر و با /all کار می‌کند."
+        }
+      ],
+      "defaultOutput": "کارت شبکه بی‌سیم Wi-Fi:\n\n   آدرس IPv4 . . . . . . . . . . . : 192.168.1.15\n   ماسک زیرشبکه . . . . . . . . . . : 255.255.255.0\n   گیت‌وی پیش‌فرض . . . . . . . . . : 192.168.1.1"
+    },
+    {
+      "name": "tracert",
+      "usage": "tracert <host>",
+      "description": "نمایش مسیر شبیه‌سازی‌شده بسته‌ها تا مقصد",
+      "matches": [
+        {
+          "args": "*",
+          "output": "ردیابی مسیر به {{arg}} — حداکثر ۳۰ هاپ:\n\n  1     1ms     1ms     1ms   192.168.1.1        [روتر شما]\n  2     8ms     9ms     8ms   85-15-20-1.isp.net [ISP]\n  3    12ms    12ms    13ms   core1.isp.net      [شبکه ISP]\n  4    18ms    19ms    18ms   border1.isp.net    [لبه شبکه]\n  5    21ms    20ms    22ms   {{arg}}            [مقصد]\n\nمسیر کامل شد؛ بسته در ۵ هاپ به مقصد رسید.\n(خروجی شبیه‌سازی‌شده)"
+        }
+      ],
+      "defaultOutput": "خطا: نام مقصد را وارد کنید.\nشیوه صحیح: tracert <host>   مثل: tracert google.com"
+    },
+    {
+      "name": "cd",
+      "usage": "cd <path> | cd ..",
+      "description": "جابه‌جایی شبیه‌سازی‌شده بین پوشه‌ها",
+      "matches": [
+        {
+          "args": "..",
+          "output": "مسیر جاری: C:\\Users\\Ali"
+        },
+        {
+          "args": "",
+          "output": "مسیر جاری: C:\\Users\\Ali\n\nنکته: با cd <name> وارد پوشه شوید و با cd .. به پوشه والد برگردید."
+        },
+        {
+          "args": "Desktop",
+          "output": "مسیر جاری: C:\\Users\\Ali\\Desktop"
+        },
+        {
+          "args": "Projects",
+          "output": "مسیر جاری: C:\\Users\\Ali\\Projects"
+        },
+        {
+          "args": "*",
+          "output": "پوشه '{{arg}}' در این شبیه‌سازی وجود ندارد. پوشه‌های موجود: Desktop و Projects (و با .. به پوشه والد برگردید)."
+        }
+      ],
+      "defaultOutput": "مسیر جاری: C:\\Users\\Ali"
+    },
+    {
+      "name": "dir",
+      "usage": "dir",
+      "description": "نمایش فهرست شبیه‌سازی‌شده فایل‌ها و پوشه‌ها",
+      "matches": [
+        {
+          "args": "",
+          "output": "Volume in drive C has no label.\nDirectory of C:\\Users\\Ali\n\n10/28/2026  09:15    <DIR>          Desktop\n10/28/2026  11:02    <DIR>          Documents\n10/28/2026  11:02    <DIR>          Downloads\n10/28/2026  11:02    <DIR>          Projects\n11/01/2026  14:22             1,024 notes.txt\n11/02/2026  08:47             2,310 readme.md\n\n              4 Dir(s)  182,453,112,832 bytes free\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی فقط dir بدون پارامتر پشتیبانی می‌شود."
+        }
+      ],
+      "defaultOutput": "در این شبیه‌سازی فقط dir بدون پارامتر پشتیبانی می‌شود."
+    },
+    {
+      "name": "mkdir",
+      "usage": "mkdir <name>",
+      "description": "ساخت شبیه‌سازی‌شده پوشه",
+      "matches": [
+        {
+          "args": "*",
+          "output": "پوشه '{{arg}}' ساخته شد. برای دیدن نتیجه دستور dir را اجرا کنید.\n(خروجی شبیه‌سازی‌شده)"
+        }
+      ],
+      "defaultOutput": "خطا: نام پوشه را وارد کنید.\nشیوه صحیح: mkdir <name>   مثل: mkdir Projects"
+    },
+    {
+      "name": "echo",
+      "usage": "echo <text>",
+      "description": "چاپ متن وارد‌شده در ترمینال",
+      "matches": [
+        {
+          "args": "*",
+          "output": "{{arg}}"
+        }
+      ],
+      "defaultOutput": "خطا: متنی برای چاپ وارد کنید.\nشیوه صحیح: echo <text>   مثل: echo سلام دنیا"
+    },
+    {
+      "name": "cls",
+      "usage": "cls",
+      "description": "پاک‌کردن صفحه ترمینال",
+      "matches": [
+        {
+          "args": "*",
+          "output": ""
+        }
+      ],
+      "defaultOutput": ""
+    },
+    {
+      "name": "git",
+      "usage": "git <status|add|commit|push>",
+      "description": "دستورات گیت: status، add، commit و push با خروجی شبیه‌سازی‌شده",
+      "matches": [
+        {
+          "args": "status",
+          "output": "On branch main\n\nChanges not staged for commit:\n  modified:   index.html\n\nUntracked files:\n  app.js\n\nno changes added to commit\n\n(ترجمه: تغییر index.html استیج نشده و فایل app.js ردیابی‌نشده است؛ برای استیج‌کردن دستور git add را اجرا کنید)"
+        },
+        {
+          "args": "add",
+          "output": "خطا: نام فایل یا نقطه را وارد کنید.\nشیوه صحیح: git add <file> یا git add ."
+        },
+        {
+          "args": "add .",
+          "output": "(تغییرات استیج شد؛ هیچ خروجی‌ای لازم نیست — مثل گیت واقعی)\nحالا با دستور git status می‌توانید فایل‌های سبز (استیج‌شده) را ببینید."
+        },
+        {
+          "args": "add *",
+          "output": "(تغییرات استیج شد)\nحالا با دستور git status می‌توانید فایل‌های استیج‌شده را ببینید."
+        },
+        {
+          "args": "commit",
+          "output": "خطا: گیت پیام کامیت می‌خواهد.\nشیوه صحیح: git commit -m \"پیام کامیت\""
+        },
+        {
+          "args": "commit -m {{rest}}",
+          "output": "[main a1b2c3d] {{rest}}\n 2 files changed, 14 insertions(+), 2 deletions(-)\n\nکامیت با شناسه a1b2c3d ثبت شد؛ برای ارسال به ریموت دستور git push را اجرا کنید."
+        },
+        {
+          "args": "commit *",
+          "output": "خطا: گیت پیام کامیت می‌خواهد.\nشیوه صحیح: git commit -m \"پیام کامیت\""
+        },
+        {
+          "args": "push",
+          "output": "Enumerating objects: 5, done.\nWriting objects: 100% (3/3), done.\nTo github.com:you/repo.git\n   a1b2c3d..e4f5g6h  main -> main\n\nکامیت‌ها به مخزن ریموت ارسال شد."
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی زیردستورهای پشتیبانی‌شده گیت عبارت‌اند از:\n  git status / git add . / git commit -m \"پیام\" / git push"
+        }
+      ],
+      "defaultOutput": "در این شبیه‌سازی زیردستورهای پشتیبانی‌شده گیت عبارت‌اند از:\n  git status / git add . / git commit -m \"پیام\" / git push"
+    }
+  ]
+}

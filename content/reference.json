@@ -1,0 +1,152 @@
+[
+  {
+    "id": "cmd-ping",
+    "name": "ping",
+    "category": "network",
+    "description": "بررسی برقراری ارتباط با یک میزبان و اندازه‌گیری زمان رفت‌وبرگشت بسته؛ اولین ابزار عیب‌یابی شبکه.",
+    "syntax": "ping [-t] [-n count] <host>",
+    "example": "ping google.com",
+    "exampleOutput": "Pinging google.com [142.250.185.78] with 32 bytes of data:\nReply from 142.250.185.78: bytes=32 time=12ms TTL=118\nReply from 142.250.185.78: bytes=32 time=11ms TTL=118",
+    "notes": "پارامتر -t یعنی تست پیوسته (توقف با Ctrl+C) و -n تعداد بسته‌ها را مشخص می‌کند. اگر «Request timed out» دیدید، مسیر تا مقصد سالم نیست."
+  },
+  {
+    "id": "cmd-ipconfig",
+    "name": "ipconfig",
+    "category": "network",
+    "description": "نمایش پیکربندی شبکه: آدرس IP، ماسک زیرشبکه و گیت‌وی؛ همراه با پارامترهای ترمیم مانند تمدید آدرس.",
+    "syntax": "ipconfig [/all | /release | /renew | /flushdns]",
+    "example": "ipconfig /all",
+    "exampleOutput": "IPv4 Address. . . . . . . . . . . : 192.168.1.15\nSubnet Mask . . . . . . . . . . . : 255.255.255.0\nDefault Gateway . . . . . . . . . : 192.168.1.1",
+    "notes": "آدرس شروع‌شده با 169.254 یعنی دستگاه IP معتبر نگرفته است؛ /release و /renew چرخه آدرس‌گیری را ری‌استارت می‌کنند و /flushdns cache نام‌ها را پاک می‌کند."
+  },
+  {
+    "id": "cmd-tracert",
+    "name": "tracert",
+    "category": "network",
+    "description": "نمایش مسیر کامل بسته‌ها تا مقصد، روتر به روتر؛ برای پیدا کردن نقطه دقیق قطعی در مسیر.",
+    "syntax": "tracert [-d] <host>",
+    "example": "tracert google.com",
+    "exampleOutput": "  1     1 ms     1 ms     1 ms   192.168.1.1\n  2     8 ms     9 ms     8 ms   85-15-20-1.isp.net\n  3    12 ms    12 ms    13 ms   core1.isp.net",
+    "notes": "سطر اول معمولاً روتر خودتان است. ستاره (*) در یک سطر یعنی آن روتر پاسخ نداد؛ اگر از همان نقطه به بعد همه سطرها ستاره باشند، قطعی آن‌جاست. -d نام میزبان‌ها را نمایش نمی‌دهد و سریع‌تر است."
+  },
+  {
+    "id": "cmd-nslookup",
+    "name": "nslookup",
+    "category": "network",
+    "description": "پرس‌وجوی مستقیم از سرور DNS برای ترجمه نام دامنه به آدرس IP؛ ابزار اصلی تست سلامت DNS.",
+    "syntax": "nslookup <domain>",
+    "example": "nslookup google.com",
+    "exampleOutput": "Server:  dns.isp.net\nAddress:  85.15.1.2\n\nName:    google.com\nAddress:  142.250.185.78",
+    "notes": "اگر ping به IP جواب می‌دهد ولی nslookup به نام خطا می‌دهد، مشکل از DNS است، نه مسیر شبکه."
+  },
+  {
+    "id": "cmd-netstat",
+    "name": "netstat",
+    "category": "network",
+    "description": "نمایش اتصالات فعال شبکه، پورت‌های باز و آدرس‌های درگیر؛ برای بازرسی امنیتی و رفع تداخل پورت.",
+    "syntax": "netstat [-an]",
+    "example": "netstat -an",
+    "exampleOutput": "Proto  Local Address          Foreign Address        State\nTCP    192.168.1.15:52300     142.250.185.78:443     ESTABLISHED",
+    "notes": "-a همه اتصالات و پورت‌های گوش‌دهنده را نشان می‌دهد و -n آدرس‌ها را عددی و سریع نمایش می‌دهد."
+  },
+  {
+    "id": "cmd-cd",
+    "name": "cd",
+    "category": "cmd",
+    "description": "تغییر پوشه جاری؛ اصلی‌ترین دستور ناوبری در خط فرمان ویندوز.",
+    "syntax": "cd [/d] [path] | cd ..",
+    "example": "cd /d D:\\Projects",
+    "exampleOutput": "D:\\Projects>",
+    "notes": "مسیر مطلق از ریشه درایو شروع می‌شود و مسیر نسبی نسبت به پوشه جاری است. «cd ..» به پوشه والد می‌رود و /d برای جابه‌جایی بین درایوها لازم است."
+  },
+  {
+    "id": "cmd-dir",
+    "name": "dir",
+    "category": "cmd",
+    "description": "نمایش فهرست فایل‌ها و پوشه‌های پوشه جاری، همراه با حجم و تاریخ.",
+    "syntax": "dir [/a] [/s] [pattern]",
+    "example": "dir *.txt",
+    "exampleOutput": "05/12/2026  10:30 AM             1,024 notes.txt\n05/13/2026  08:12 AM               512 todo.txt",
+    "notes": "/a فایل‌های مخفی را هم نشان می‌دهد، /s شامل زیرپوشه‌ها می‌شود و الگوی *.txt فقط فایل‌های متنی را فیلتر می‌کند."
+  },
+  {
+    "id": "cmd-mkdir",
+    "name": "mkdir",
+    "category": "cmd",
+    "description": "ساخت پوشه جدید؛ در صورت نیاز کل مسیر چندسطحی را یک‌جا می‌سازد.",
+    "syntax": "mkdir <path>   (خلاصه: md)",
+    "example": "mkdir Project\\src",
+    "exampleOutput": "",
+    "notes": "اگر پوشه والد وجود نداشته باشد، CMD همه سطوح مسیر را می‌سازد؛ یعنی دستور بالا هم Project و هم src را می‌سازد."
+  },
+  {
+    "id": "cmd-copy",
+    "name": "copy",
+    "category": "cmd",
+    "description": "کپی فایل یا گروهی از فایل‌ها به مسیر دیگر؛ مبدأ حفظ می‌شود.",
+    "syntax": "copy <source> <destination>",
+    "example": "copy note.txt D:\\Backup",
+    "exampleOutput": "        1 file(s) copied.",
+    "notes": "با wildcard می‌توانید گروهی کپی کنید: «copy *.png D:\\Pictures». اگر برای مقصد نام جدید بنویسید، نسخه‌ای با نام جدید ساخته می‌شود."
+  },
+  {
+    "id": "cmd-del",
+    "name": "del",
+    "category": "cmd",
+    "description": "حذف فایل یا گروهی از فایل‌ها؛ حذف‌شده‌ها به Recycle Bin نمی‌روند.",
+    "syntax": "del [/q] <file>",
+    "example": "del *.tmp",
+    "exampleOutput": "",
+    "notes": "برای حذف پوشه از rmdir /s /q استفاده کنید، نه del. احتیاط: del بدون سوال حذف می‌کند؛ قبل از اجرا با dir مسیر را چک کنید."
+  },
+  {
+    "id": "git-clone",
+    "name": "git clone",
+    "category": "git",
+    "description": "گرفتن کپی کامل یک مخزن ریموت با کل تاریخچه به سیستم محلی.",
+    "syntax": "git clone <url>",
+    "example": "git clone https://github.com/user/repo.git",
+    "exampleOutput": "Cloning into 'repo'...\nremote: Enumerating objects: 156, done.\nReceiving objects: 100% (156/156), done.",
+    "notes": "پوشه‌ای به نام repo ساخته می‌شود که خودش مخزن گیت است و اتصال ریموت (origin) از قبل برقرار است؛ نیازی به git init نیست."
+  },
+  {
+    "id": "git-status",
+    "name": "git status",
+    "category": "git",
+    "description": "نمایش وضعیت فعلی مخزن: فایل‌های آماده کامیت، تغییر‌کرده و ردیابی‌نشده.",
+    "syntax": "git status",
+    "example": "git status",
+    "exampleOutput": "On branch main\nChanges to be committed:\n  modified:   index.html\n\nUntracked files:\n  notes.txt",
+    "notes": "قبل و بعد از هر دستور گیت آن را اجرا کنید؛ در خروجی، رنگ سبز یعنی فایل در استیجینگ است و قرمز یعنی هنوز نه."
+  },
+  {
+    "id": "git-add",
+    "name": "git add",
+    "category": "git",
+    "description": "انتقال تغییرات از پوشه کاری به ناحیه استیجینگ؛ انتخاب «چه چیزی در کامیت بعدی باشد».",
+    "syntax": "git add <file> | git add .",
+    "example": "git add index.html",
+    "exampleOutput": "",
+    "notes": "«git add .» همه تغییرات پوشه جاری را استیج می‌کند. اگر بعد از add دوباره ویرایش کنید، نسخه جدید باید مجدداً add شود."
+  },
+  {
+    "id": "git-commit",
+    "name": "git commit",
+    "category": "git",
+    "description": "ثبت تغییرات استیج‌شده به‌عنوان یک نقطه بازیابی جدید در تاریخچه، همراه با پیام توضیحی.",
+    "syntax": "git commit -m \"<message>\"",
+    "example": "git commit -m \"افزودن فرم لاگین\"",
+    "exampleOutput": "[main a1b2c3d] افزودن فرم لاگین\n 1 file changed, 24 insertions(+)",
+    "notes": "هر کامیت یک شناسه یکتا می‌گیرد. پیام معنادار بنویسید: یک کامیت، یک موضوع."
+  },
+  {
+    "id": "git-push",
+    "name": "git push",
+    "category": "git",
+    "description": "ارسال کامیت‌های محلی به مخزن ریموت مثل گیت‌هاب.",
+    "syntax": "git push [-u origin main]",
+    "example": "git push -u origin main",
+    "exampleOutput": "Enumerating objects: 5, done.\nWriting objects: 100% (3/3), done.\nTo github.com:user/repo.git\n   a1b2c3d..e4f5g6h  main -> main",
+    "notes": "پرچم -u فقط بار اول اتصال برنچ محلی به ریموت را برقرار می‌کند؛ بعد از آن git push ساده کافی است. احراز هویت با Personal Access Token انجام می‌شود، نه رمز عبور."
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "network-basics",
+    "title": "مبانی شبکه",
+    "description": "از مفهوم شبکه و مدل کلاینت-سرور تا آدرس‌دهی IP، DNS و ابزارهای عیب‌یابی؛ نقطه شروع هر مهندس شبکه.",
+    "icon": "Network",
+    "color": "teal",
+    "order": 1,
+    "lessonSlugs": ["what-is-network", "ip-dns", "network-tools"]
+  },
+  {
+    "id": "cmd-basics",
+    "title": "دستورات CMD",
+    "description": "کار عملی با خط فرمان ویندوز: ناوبری بین پوشه‌ها، مدیریت فایل‌ها و دستورات شبکه در CMD.",
+    "icon": "TerminalSquare",
+    "color": "amber",
+    "order": 2,
+    "lessonSlugs": ["terminal-intro", "file-management", "network-cmd"]
+  },
+  {
+    "id": "git-basics",
+    "title": "گیت از صفر",
+    "description": "نسخه‌بندی کد با گیت: نصب و پیکربندی، چرخه کاری add و commit و همکاری با گیت‌هاب.",
+    "icon": "GitBranch",
+    "color": "violet",
+    "order": 3,
+    "lessonSlugs": ["git-intro", "add-commit", "remote-github"]
+  }
+]
