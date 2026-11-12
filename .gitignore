@@ -1,0 +1,43 @@
+# ---------- وابستگی‌ها ----------
+node_modules/
+
+# ---------- خروجی‌های Next.js ----------
+.next/
+.next-build/
+out/
+build/
+
+# ---------- لاگ و فایل‌های موقت ----------
+*.log
+dev.log
+server.log
+*.tsbuildinfo
+
+# ---------- محیط و رازها ----------
+.env
+.env.*
+!.env.example
+.gh-token
+
+# ---------- دیتابیس‌های محلی ----------
+db/*.db
+db/*.db-journal
+
+# ---------- فایل‌های زیرساخت محیط اجرا (جزو پروژه نیستند) ----------
+.zscripts/
+Caddyfile
+examples/
+tests/
+skills/
+mini-services/
+download/
+upload/
+prompt
+local-*
+.claude
+.z-ai-config
+
+# ---------- متفرقه ----------
+.DS_Store
+*.pem
+.vercel
