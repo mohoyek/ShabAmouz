@@ -6,7 +6,7 @@ import { GraduationCap, Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -93,6 +93,7 @@ export function Navbar() {
                 <GraduationCap className="size-5 text-emerald-600" />
                 شب‌آموز
               </SheetTitle>
+              <SheetDescription className="sr-only">منوی ناوبری سایت شب‌آموز</SheetDescription>
               <nav className="mt-4 flex flex-col gap-1" aria-label="ناوبری موبایل">
                 {NAV_LINKS.map((link) => (
                   <Link

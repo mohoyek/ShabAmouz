@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { categoryLabels } from "@/lib/path-styles";
+import { faNum } from "@/lib/format";
 import type { CommandCategory, CommandRef } from "@/lib/types";
 
 type CategoryFilter = "all" | CommandCategory;
@@ -75,7 +76,7 @@ export function ReferenceClient({ commands }: { commands: CommandRef[] }) {
             >
               {filter.label}
               <span className="rounded-full bg-foreground/10 px-1.5 text-[11px] font-bold">
-                {counts[filter.key]}
+                {faNum(counts[filter.key])}
               </span>
             </Button>
           ))}
@@ -83,7 +84,7 @@ export function ReferenceClient({ commands }: { commands: CommandRef[] }) {
       </div>
 
       <p className="text-sm text-muted-foreground" aria-live="polite">
-        {filtered.length} دستور یافت شد
+        {faNum(filtered.length)} دستور یافت شد
       </p>
 
       {filtered.length === 0 ? (
