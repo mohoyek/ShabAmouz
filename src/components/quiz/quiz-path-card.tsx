@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,13 @@ interface QuizPathCardProps {
 }
 
 /**
- * کارت آزمون هر مسیر — بهترین نتیجه ذخیره‌شده را از store نشان می‌دهد.
- * موتور اجرای آزمون در فاز ۴ فعال می‌شود؛ تا آن زمان دکمه شروع غیرفعال است.
+ * کارت آزمون هر مسیر — بهترین نتیجه ذخیره‌شده را از store نشان می‌دهد
+ * و دکمه شروع به صفحه آزمون همان مسیر (/quiz/[path]) می‌رود.
  */
 export function QuizPathCard({ path, stats }: QuizPathCardProps) {
   const style = pathStyles[path.color];
   const bestPercent = useProgressStore((s) => s.quizResults[path.id]?.bestPercent);
+  const attempts = useProgressStore((s) => s.quizResults[path.id]?.attempts);
 
   return (
     <Card className="h-full gap-4">
@@ -49,12 +51,15 @@ export function QuizPathCard({ path, stats }: QuizPathCardProps) {
           <Badge className="gap-1.5 border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
             <Trophy className="size-3.5" />
             بهترین نتیجه: {faPercent(bestPercent)}
+            {typeof attempts === "number" && attempts > 1
+              ? ` — ${faNum(attempts)} تلاش`
+              : ""}
           </Badge>
         ) : (
           <span className="text-xs text-muted-foreground">هنوز نتیجه‌ای ثبت نشده</span>
         )}
-        <Button disabled className="gap-2" title="موتور آزمون در فاز ۴ فعال می‌شود">
-          شروع آزمون
+        <Button asChild className="gap-2">
+          <Link href={`/quiz/${path.id}`}>شروع آزمون</Link>
         </Button>
       </CardContent>
     </Card>

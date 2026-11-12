@@ -130,6 +130,21 @@
     text-align: left;
   }
 
+  /* مکان‌نمای چشمک‌زن ترمینال شبیه‌سازی‌شده */
+  @keyframes terminal-blink {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0.15;
+    }
+  }
+  .terminal-cursor {
+    animation: terminal-blink 1.1s steps(1) infinite;
+  }
+
   /* اسکرول‌بار نازک برای لیست‌های بلند */
   .thin-scrollbar {
     scrollbar-width: thin;
