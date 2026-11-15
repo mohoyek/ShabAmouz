@@ -46,6 +46,9 @@ const QUICK_COMMANDS = [
   "tracert google.com",
   "dir",
   "git status",
+  "ls -la",
+  "show ip interface brief",
+  "Get-Process",
 ];
 
 function detectTone(text: string): Tone {

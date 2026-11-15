@@ -148,5 +148,105 @@
     "example": "git push -u origin main",
     "exampleOutput": "Enumerating objects: 5, done.\nWriting objects: 100% (3/3), done.\nTo github.com:user/repo.git\n   a1b2c3d..e4f5g6h  main -> main",
     "notes": "پرچم -u فقط بار اول اتصال برنچ محلی به ریموت را برقرار می‌کند؛ بعد از آن git push ساده کافی است. احراز هویت با Personal Access Token انجام می‌شود، نه رمز عبور."
+  },
+  {
+    "id": "linux-ls",
+    "name": "ls",
+    "category": "linux",
+    "description": "نمایش فهرست فایل‌ها و پوشه‌ها در لینوکس؛ پرکاربردترین دستور ناوبری که با فلگ‌ها خروجی کامل می‌دهد.",
+    "syntax": "ls [-l] [-a] [-h] [path]",
+    "example": "ls -lah /var/log",
+    "exampleOutput": "total 2.4M\ndrwxr-xr-x 2 root root 4.0K Nov 15 09:30 .\n-rw-r--r-- 1 root adm  2.1M Nov 15 09:12 syslog\n-rw-r----- 1 root adm   48K Nov 15 08:44 auth.log",
+    "notes": "-l نمایش بلند با مجوز و مالک، -a فایل‌های مخفی (نقطه‌دار) و -h حجم خوانا. ترکیب رایج «ls -lah» است؛ ستون اول خروجی همان مجوزهاست که در درس مجوزهای LPIC-1 توضیح داده شده."
+  },
+  {
+    "id": "linux-chmod",
+    "name": "chmod",
+    "category": "linux",
+    "description": "تغییر مجوز خواندن/نوشتن/اجرای فایل با حالت عددی یا نمادی؛ ابزار کلیدی مدیریت دسترسی در لینوکس.",
+    "syntax": "chmod <mode> <file>   (مثل 755 یا u+x)",
+    "example": "chmod 755 deploy.sh",
+    "exampleOutput": "",
+    "notes": "حالت عددی از سه رقم rwx ساخته می‌شود: 7=rwx، 5=r-x، 4=r--. پس 755 یعنی مالک دسترسی کامل و گروه و بقیه فقط خواندن/اجرا؛ برای اجرایی‌کردن اسکریپت همین کافی است. با ls -l نتیجه را ببینید."
+  },
+  {
+    "id": "linux-systemctl",
+    "name": "systemctl",
+    "category": "linux",
+    "description": "مدیریت سرویس‌های systemd: دیدن وضعیت، استارت و استاپ، ری‌استارت و فعال‌سازی سرویس برای زمان بوت.",
+    "syntax": "systemctl <status|start|stop|restart|enable> <service>",
+    "example": "systemctl status nginx",
+    "exampleOutput": "● nginx.service - A high performance web server\n   Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n   Active: active (running) since Sat 2026-11-14 21:03:41 UTC; 2h 12min ago\n   Tasks: 3 (limit: 4612)\n   Memory: 8.4M",
+    "notes": "«Active: active (running)» یعنی سرویس سالم است؛ اگر failed دیدید لاگش را با journalctl -u nginx بخوانید. enable باعث می‌شود سرویس بعد از ریبوت خودکار بالا بیاید."
+  },
+  {
+    "id": "linux-ssh",
+    "name": "ssh",
+    "category": "linux",
+    "description": "اتصال امن رمزنگاری‌شده به شل یک سرور ریموت؛ ابزار روزمره هر ادمین لینوکس برای مدیریت از راه دور.",
+    "syntax": "ssh [user@]host [-p port]",
+    "example": "ssh ali@192.168.1.10",
+    "exampleOutput": "The authenticity of host '192.168.1.10' can't be established.\nAre you sure you want to continue connecting (yes/no)? yes\n\nali@server:~$",
+    "notes": "پورت پیش‌فرض 22 است و با -p عوض می‌شود. ورود با کلید امن‌تر و بی‌رمز است: با ssh-keygen کلید بسازید و با ssh-copy-id روی سرور بگذارید."
+  },
+  {
+    "id": "linux-apt",
+    "name": "apt",
+    "category": "linux",
+    "description": "مدیر بسته‌های دبیان/اوبونتو: نصب، به‌روزرسانی و حذف نرم‌افزار از مخازن رسمی با وابستگی‌ها.",
+    "syntax": "apt <update|upgrade|install|remove> [package]",
+    "example": "sudo apt install nginx",
+    "exampleOutput": "Reading package lists... Done\nThe following NEW packages will be installed:\n  nginx\nSetting up nginx (1.24.0) ...\nProcessing triggers for systemd ...",
+    "notes": "apt update فقط فهرست بسته‌ها را تازه می‌کند (چیزی نصب نمی‌کند) و apt upgrade بسته‌های نصب‌شده را ارتقا می‌دهد. در خانواده RHEL/CentOS معادلش dnf است."
+  },
+  {
+    "id": "ps-getcommand",
+    "name": "Get-Command",
+    "category": "powershell",
+    "description": "یافتن دستورهای پاورشل با جستجو در نام یا الگوی wildcard؛ ابزار کشف توانایی‌های پاورشل.",
+    "syntax": "Get-Command [-Name pattern]",
+    "example": "Get-Command -Name *firewall*",
+    "exampleOutput": "CommandType     Name                        Source\n-----------     ----                        ------\nFunction        Get-NetFirewallRule         NetSecurity\nCmdlet          New-NetFirewallRule         NetSecurity",
+    "notes": "پاورشل صدها cmdlet دارد؛ به‌جای حفظ‌کردن، با Get-Command جستجو کنید. ستون Source نشان می‌دهد دستور از کدام ماژول می‌آید؛ ماژول NetSecurity برای فایروال ویندوز است."
+  },
+  {
+    "id": "ps-gethelp",
+    "name": "Get-Help",
+    "category": "powershell",
+    "description": "نمایش راهنمای کامل هر cmdlet: سینتکس، پارامترها و مثال‌های رسمی مایکروسافت.",
+    "syntax": "Get-Help <cmdlet> [-Examples | -Full]",
+    "example": "Get-Help Get-Process -Examples",
+    "exampleOutput": "NAME\n    Get-Process\n\nSYNOPSIS\n    Gets the processes that are running on the local computer.\n\n    -------------------------- EXAMPLE 1 --------------------------\n    PS C:\\> Get-Process",
+    "notes": "معادل man در لینوکس است. اگر راهنما نصب نبود اول Update-Help اجرا کنید؛ -Examples فقط مثال‌ها را می‌آورد که برای یادگیری سریع بهترین حالت است."
+  },
+  {
+    "id": "ps-getchilditem",
+    "name": "Get-ChildItem",
+    "category": "powershell",
+    "description": "نمایش فهرست فایل‌ها و پوشه‌ها؛ معادل مدرن dir در پاورشل با خروجی شیءگرا و قابل فیلتر.",
+    "syntax": "Get-ChildItem [[-Path] path] [-Recurse] [-Filter pattern]",
+    "example": "Get-ChildItem C:\\Logs -Filter *.log -Recurse",
+    "exampleOutput": "    Directory: C:\\Logs\n\nMode                 LastWriteTime         Length Name\n----                 -------------         ------ ----\n-a----        11/14/2026   9:12 PM         245760 app.log\n-a----        11/14/2026   9:30 PM           1024 error.log",
+    "notes": "نام‌های مستعار dir و ls در پاورشل واقعاً همین cmdlet را اجرا می‌کنند. -Recurse وارد زیرپوشه‌ها می‌شود و چون خروجی شیء است با پایپ‌لاین فیلتر می‌شود: ... | Where-Object Length -gt 1MB."
+  },
+  {
+    "id": "ps-getprocess",
+    "name": "Get-Process",
+    "category": "powershell",
+    "description": "نمایش فرآیندهای در حال اجرا با مصرف CPU و RAM؛ نقطه شروع بررسی سلامت و فشار منابع سیستم.",
+    "syntax": "Get-Process [[-Name] name]",
+    "example": "Get-Process chrome",
+    "exampleOutput": " NPM(K)    PM(M)      WS(M)     CPU(s)      Id  ProcessName\n ------    -----      -----     ------      --  -----------\n    215    512.44     768.12     142.77   12440  chrome\n     98    233.10     402.55      88.19   10920  chrome",
+    "notes": "خروجی شیء است؛ با پایپ‌لاین تحلیلش کنید: Get-Process | Sort-Object WS -Descending | Select-Object -First 5 یعنی پنج فرآیند پرمصرف RAM. متوقف‌کردن هم با Stop-Process است."
+  },
+  {
+    "id": "ps-getservice",
+    "name": "Get-Service",
+    "category": "powershell",
+    "description": "نمایش سرویس‌های ویندوز و وضعیت آن‌ها؛ معادل خط‌فرمانی کنسول services.msc.",
+    "syntax": "Get-Service [[-Name] name] [-DisplayName pattern]",
+    "example": "Get-Service wuauserv",
+    "exampleOutput": "Status   Name               DisplayName\n------   ----               -----------\nRunning  wuauserv           Windows Update",
+    "notes": "Status می‌تواند Running، Stopped یا Paused باشد. کنترل سرویس با Start-Service و Stop-Service و Restart-Service است؛ با Remoting همین الگو روی سرورهای دیگر هم اجرا می‌شود."
   }
 ]

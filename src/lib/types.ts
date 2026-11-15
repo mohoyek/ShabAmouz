@@ -82,7 +82,7 @@ export interface Lesson {
 
 /* --------------------------------- مرجع دستورات --------------------------------- */
 
-export type CommandCategory = "network" | "cmd" | "git";
+export type CommandCategory = "network" | "cmd" | "git" | "linux" | "powershell";
 
 /** یک دستور در صفحه مرجع — منبع: content/reference.json */
 export interface CommandRef {

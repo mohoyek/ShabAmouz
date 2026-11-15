@@ -161,4 +161,6 @@ export const categoryLabels: Record<CommandCategory, string> = {
   network: "شبکه",
   cmd: "خط فرمان",
   git: "گیت",
+  linux: "لینوکس",
+  powershell: "پاورشل",
 };

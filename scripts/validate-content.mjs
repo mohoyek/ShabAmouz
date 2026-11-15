@@ -1,9 +1,9 @@
 /**
  * اعتبارسنجی فایل‌های محتوا — شب‌آموز
  * اجرا: node scripts/validate-content.mjs
- * بررسی می‌کند: تعداد مسیرها (۱۴)، درس‌ها (۴۲)، دستورات مرجع (۱۵) در سه دسته
+ * بررسی می‌کند: تعداد مسیرها (۱۴)، درس‌ها (۴۲)، دستورات مرجع (۲۵) در پنج دسته
  * ۵تایی، سؤالات آزمون (۱۴۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
- * ۱۰ دستور ترمینال با قاعده ping google.com و نقشه راه دو مسیره ۴ مرحله‌ای.
+ * ۱۶ دستور ترمینال با قاعده ping google.com و git status و نقشه راه دو مسیره ۴ مرحله‌ای.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -68,8 +68,8 @@ check(lessonCount === 42, `تعداد کل درس‌ها باید ۴۲ باشد 
 
 /* ----------------------------- مرجع دستورات ----------------------------- */
 const commands = JSON.parse(fs.readFileSync(path.join(contentDir, "reference.json"), "utf-8"));
-check(commands.length === 15, `تعداد دستورات مرجع باید ۱۵ باشد (فعلاً: ${commands.length})`);
-const byCategory = { network: 0, cmd: 0, git: 0 };
+check(commands.length === 25, `تعداد دستورات مرجع باید ۲۵ باشد (فعلاً: ${commands.length})`);
+const byCategory = { network: 0, cmd: 0, git: 0, linux: 0, powershell: 0 };
 const cmdIds = new Set();
 for (const c of commands) {
   check(cmdIds.has(c.id) === false, `شناسه دستور تکراری: ${c.id}`);
@@ -84,6 +84,8 @@ for (const c of commands) {
 check(byCategory.network === 5, `دسته شبکه باید ۵ دستور داشته باشد (فعلاً: ${byCategory.network})`);
 check(byCategory.cmd === 5, `دسته CMD باید ۵ دستور داشته باشد (فعلاً: ${byCategory.cmd})`);
 check(byCategory.git === 5, `دسته گیت باید ۵ دستور داشته باشد (فعلاً: ${byCategory.git})`);
+check(byCategory.linux === 5, `دسته لینوکس باید ۵ دستور داشته باشد (فعلاً: ${byCategory.linux})`);
+check(byCategory.powershell === 5, `دسته پاورشل باید ۵ دستور داشته باشد (فعلاً: ${byCategory.powershell})`);
 
 /* -------------------------------- آزمون -------------------------------- */
 const questions = JSON.parse(fs.readFileSync(path.join(contentDir, "quiz.json"), "utf-8"));
@@ -116,8 +118,11 @@ for (const id of validPathIds) {
 
 /* -------------------------------- ترمینال -------------------------------- */
 const terminal = JSON.parse(fs.readFileSync(path.join(contentDir, "terminal.json"), "utf-8"));
-const expectedCommands = ["help", "ping", "ipconfig", "tracert", "cd", "dir", "mkdir", "echo", "cls", "git"];
-check(terminal.rules.length === 10, `تعداد دستورات ترمینال باید ۱۰ باشد (فعلاً: ${terminal.rules.length})`);
+const expectedCommands = [
+  "help", "ping", "ipconfig", "tracert", "cd", "dir", "mkdir", "echo", "cls", "git",
+  "ls", "chmod", "systemctl", "show", "/ip", "Get-Process",
+];
+check(terminal.rules.length === 16, `تعداد دستورات ترمینال باید ۱۶ باشد (فعلاً: ${terminal.rules.length})`);
 check(typeof terminal.welcome === "string" && terminal.welcome.length > 5, "پیام خوش‌آمد ترمینال نامعتبر است");
 check(typeof terminal.unknownCommand === "string" && terminal.unknownCommand.includes("{{cmd}}"), "پیام unknownCommand باید جانگه‌دار {{cmd}} داشته باشد");
 for (const name of expectedCommands) {
@@ -132,6 +137,16 @@ const pingRule = terminal.rules.find((r) => r.name === "ping");
 check(pingRule && pingRule.matches.some((m) => m.args === "google.com"), "قاعده ping google.com وجود ندارد (معیار پذیرش)");
 const gitRule = terminal.rules.find((r) => r.name === "git");
 check(gitRule && gitRule.matches.some((m) => m.args === "status"), "قاعده git status وجود ندارد");
+const showRule = terminal.rules.find((r) => r.name === "show");
+check(showRule && showRule.matches.some((m) => m.args === "ip interface brief"), "قاعده show ip interface brief وجود ندارد");
+const ipRule = terminal.rules.find((r) => r.name === "/ip");
+check(ipRule && ipRule.matches.some((m) => m.args === "address print"), "قاعده /ip address print وجود ندارد");
+const lsRule = terminal.rules.find((r) => r.name === "ls");
+check(lsRule && lsRule.matches.some((m) => m.args === "-la"), "قاعده ls -la وجود ندارد");
+const psRule = terminal.rules.find((r) => r.name.toLowerCase() === "get-process");
+check(psRule && psRule.matches.some((m) => m.args === ""), "قاعده Get-Process بدون پارامتر وجود ندارد");
+const helpRule = terminal.rules.find((r) => r.name === "help");
+check(helpRule && helpRule.defaultOutput.includes("۱۶ دستور"), "خروجی help باید فهرست ۱۶ دستوری داشته باشد");
 
 /* ------------------------------- نقشه راه ------------------------------- */
 const roadmap = JSON.parse(fs.readFileSync(path.join(contentDir, "roadmap.json"), "utf-8"));
@@ -180,8 +195,8 @@ if (errors.length > 0) {
   console.log("✓ اعتبارسنجی محتوا موفق بود:");
   console.log(`  مسیرها: ${paths.length} (${paths.map((p) => p.title).join("، ")})`);
   console.log(`  درس‌ها: ${lessonCount} × MDX با فرانت‌متر معتبر`);
-  console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git})`);
+  console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git}, لینوکس=${byCategory.linux}, پاورشل=${byCategory.powershell})`);
   console.log(`  سؤالات آزمون: ${questions.length} (هر مسیر ۷ چهارگزینه‌ای + ۳ جای‌خالی)`);
-  console.log(`  دستورات ترمینال: ${terminal.rules.length} (شامل ping google.com و git با زیردستورها)`);
+  console.log(`  دستورات ترمینال: ${terminal.rules.length} (شامل ping google.com، git، ls، systemctl، show، /ip و Get-Process)`);
   console.log(`  نقشه راه: ${roadmap.tracks.length} مسیر شغلی — ${roadmap.tracks.map((t) => `${t.title}: ${t.levels.map((l) => l.title).join(" ← ")}`).join(" | ")}`);
 }

@@ -9,10 +9,10 @@
       "matches": [
         {
           "args": "*",
-          "output": "دستورهای پشتیبانی‌شده (۱۰ دستور):\n\n  help       نمایش همین راهنما\n  ping       تست دسترسی به یک میزبان\n  ipconfig   نمایش پیکربندی شبکه\n  tracert    نمایش مسیر بسته‌ها تا مقصد\n  cd         جابه‌جایی بین پوشه‌ها\n  dir        فهرست فایل‌ها و پوشه‌ها\n  mkdir      ساخت پوشه جدید\n  echo       چاپ متن در ترمینال\n  cls        پاک‌کردن صفحه\n  git        دستورات گیت: status / add / commit / push\n\nنکته: این ترمینال شبیه‌سازی‌شده است و خروجی‌ها از پیش تعریف‌شده‌اند."
+          "output": "دستورهای پشتیبانی‌شده (۱۶ دستور):\n\n  help         نمایش همین راهنما\n  ping         تست دسترسی به یک میزبان\n  ipconfig     نمایش پیکربندی شبکه (ویندوز)\n  tracert      نمایش مسیر بسته‌ها تا مقصد\n  cd / dir     ناوبری و فهرست پوشه‌ها (CMD)\n  mkdir        ساخت پوشه\n  echo / cls   چاپ متن و پاک‌کردن صفحه\n  git          status / add / commit / push\n  ls / chmod   فهرست فایل‌ها و مجوزها (لینوکس)\n  systemctl    مدیریت سرویس‌های systemd (لینوکس)\n  show         سیسکو: ip interface brief / version\n  /ip          میکروتیک: address print / route print\n  Get-Process  فرآیندهای در حال اجرا (پاورشل)\n\nنکته: این ترمینال شبیه‌سازی‌شده است و خروجی‌ها از پیش تعریف‌شده‌اند."
         }
       ],
-      "defaultOutput": "دستورهای پشتیبانی‌شده (۱۰ دستور):\n\n  help       نمایش همین راهنما\n  ping       تست دسترسی به یک میزبان\n  ipconfig   نمایش پیکربندی شبکه\n  tracert    نمایش مسیر بسته‌ها تا مقصد\n  cd         جابه‌جایی بین پوشه‌ها\n  dir        فهرست فایل‌ها و پوشه‌ها\n  mkdir      ساخت پوشه جدید\n  echo       چاپ متن در ترمینال\n  cls        پاک‌کردن صفحه\n  git        دستورات گیت: status / add / commit / push"
+      "defaultOutput": "دستورهای پشتیبانی‌شده (۱۶ دستور):\n\n  help         نمایش همین راهنما\n  ping         تست دسترسی به یک میزبان\n  ipconfig     نمایش پیکربندی شبکه (ویندوز)\n  tracert      نمایش مسیر بسته‌ها تا مقصد\n  cd / dir     ناوبری و فهرست پوشه‌ها (CMD)\n  mkdir        ساخت پوشه\n  echo / cls   چاپ متن و پاک‌کردن صفحه\n  git          status / add / commit / push\n  ls / chmod   فهرست فایل‌ها و مجوزها (لینوکس)\n  systemctl    مدیریت سرویس‌های systemd (لینوکس)\n  show         سیسکو: ip interface brief / version\n  /ip          میکروتیک: address print / route print\n  Get-Process  فرآیندهای در حال اجرا (پاورشل)"
     },
     {
       "name": "ping",
@@ -189,6 +189,138 @@
         }
       ],
       "defaultOutput": "در این شبیه‌سازی زیردستورهای پشتیبانی‌شده گیت عبارت‌اند از:\n  git status / git add . / git commit -m \"پیام\" / git push"
+    },
+    {
+      "name": "ls",
+      "usage": "ls [-la]",
+      "description": "نمایش فهرست شبیه‌سازی‌شده فایل‌ها و پوشه‌ها در لینوکس",
+      "matches": [
+        {
+          "args": "",
+          "output": "Desktop    Documents    Downloads    Projects\nnotes.txt  readme.md    deploy.sh"
+        },
+        {
+          "args": "-la",
+          "output": "total 44\ndrwxr-xr-x 6 ali ali  4096 Nov 15 09:15 .\ndrwxr-xr-x 3 root root 4096 Nov 01 08:00 ..\ndrwxr-xr-x 2 ali ali  4096 Nov 12 18:30 Desktop\ndrwxr-xr-x 2 ali ali  4096 Nov 12 18:30 Documents\ndrwxr-xr-x 2 ali ali  4096 Nov 13 21:02 Projects\n-rw-r--r-- 1 ali ali  1024 Nov 14 14:22 notes.txt\n-rw-r--r-- 1 ali ali  2310 Nov 14 09:47 readme.md\n-rwxr-xr-x 1 ali ali   512 Nov 15 08:12 deploy.sh\n\nستون اول مجوزهاست: drwxr-xr-x یعنی پوشه با دسترسی کامل مالک و خواندن/اجرا برای بقیه؛ x در انتهای deploy.sh یعنی اسکریپت اجرایی است."
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی فقط ls بدون پارامتر و با -la پشتیبانی می‌شود؛ خروجی بلند را با ls -la ببینید."
+        }
+      ],
+      "defaultOutput": "در این شبیه‌سازی فقط ls بدون پارامتر و با -la پشتیبانی می‌شود."
+    },
+    {
+      "name": "chmod",
+      "usage": "chmod <mode> <file>",
+      "description": "اعمال شبیه‌سازی‌شده مجوزهای لینوکس با حالت عددی (755 و 644)",
+      "matches": [
+        {
+          "args": "755 *",
+          "output": "مجوز «{{arg}}» اعمال شد.\nحالت 755 = rwxr-xr-x: مالک خواندن/نوشتن/اجرا، گروه و سایر کاربران فقط خواندن و اجرا.\nبا ls -la می‌توانید نتیجه را ببینید.\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "644 *",
+          "output": "مجوز «{{arg}}» اعمال شد.\nحالت 644 = rw-r--r--: مالک می‌خواند و می‌نویسد و بقیه فقط می‌خوانند؛ حالت استاندارد فایل‌های متنی و پیکربندی.\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی حالت‌های عددی 755 و 644 پشتیبانی می‌شوند؛ مثل: chmod 755 deploy.sh"
+        }
+      ],
+      "defaultOutput": "خطا: حالت مجوز و نام فایل را وارد کنید.\nشیوه صحیح: chmod 755 deploy.sh"
+    },
+    {
+      "name": "systemctl",
+      "usage": "systemctl <status|start|restart|enable> <service>",
+      "description": "مدیریت شبیه‌سازی‌شده سرویس‌های systemd لینوکس",
+      "matches": [
+        {
+          "args": "status nginx",
+          "output": "● nginx.service - A high performance web server\n   Loaded: loaded (/lib/systemd/system/nginx.service; enabled)\n   Active: active (running) since Sat 2026-11-14 21:03:41 UTC; 2h 12min ago\n   Tasks: 3 (limit: 4612)\n   Memory: 8.4M\n\nسرویس nginx فعال و در حال اجراست؛ enabled یعنی بعد از ریبوت هم خودکار بالا می‌آید."
+        },
+        {
+          "args": "status *",
+          "output": "● {{arg}}.service\n   Active: active (running) since Sat 2026-11-14 21:03:41 UTC; 1h 8min ago\n\nسرویس {{arg}} فعال است.\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "start *",
+          "output": "سرویس {{arg}} استارت شد. برای اطمینان از سلامت آن، systemctl status {{arg}} را اجرا کنید."
+        },
+        {
+          "args": "restart *",
+          "output": "سرویس {{arg}} ری‌استارت شد؛ چند ثانیه صبر کنید و وضعیت را با systemctl status {{arg}} چک کنید."
+        },
+        {
+          "args": "enable *",
+          "output": "سرویس {{arg}} برای اجرای خودکار بعد از ریبوت فعال شد (created symlink)."
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی زیردستورهای systemctl پشتیبانی‌شده: status / start / restart / enable — مثل: systemctl status nginx"
+        }
+      ],
+      "defaultOutput": "خطا: عملیات و نام سرویس را وارد کنید.\nشیوه صحیح: systemctl status nginx"
+    },
+    {
+      "name": "show",
+      "usage": "show <ip interface brief | version>",
+      "description": "دستورات نمایشی سیسکو IOS: وضعیت اینترفیس‌ها و اطلاعات سیستم",
+      "matches": [
+        {
+          "args": "ip interface brief",
+          "output": "Interface              IP-Address      Status                Protocol\nGigabitEthernet0/0     192.168.1.1     up                    up\nGigabitEthernet0/1     unassigned      administratively down down\nSerial0/0/0            203.0.113.2     up                    up\nVlan1                  192.168.10.1    up                    up\n\n«up/up» یعنی لایه فیزیکی و پروتکل هر دو سالم‌اند؛ «administratively down» یعنی اینترفیس با shutdown بسته شده است."
+        },
+        {
+          "args": "version",
+          "output": "Cisco IOS Software, Version 15.9(3)M3, RELEASE SOFTWARE (fc1)\nRouter uptime is 6 weeks, 2 days, 4 hours, 11 minutes\nSystem returned to ROM by power-on\nSystem image file is \"flash:c2900-universalk9-mz.SPA.159-3.M3.bin\"\n\nProcessor board ID FTX1234ABCD\n2 Gigabit Ethernet interfaces\n1 Serial interface\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی زیردستورهای show پشتیبانی‌شده: ip interface brief و version — مثل: show ip interface brief"
+        }
+      ],
+      "defaultOutput": "خطا: زیردستور show را وارد کنید.\nشیوه صحیح: show ip interface brief"
+    },
+    {
+      "name": "/ip",
+      "usage": "/ip <address print | route print>",
+      "description": "دستورات RouterOS میکروتیک: نمایش آدرس‌ها و جدول مسیریابی",
+      "matches": [
+        {
+          "args": "address print",
+          "output": "Flags: D - dynamic\n #   ADDRESS             NETWORK         INTERFACE\n 0   192.168.88.1/24     192.168.88.0    bridge\n 1   85.15.20.4/28       85.15.20.0      ether1\n 1 D 192.168.1.100/24    192.168.1.0     ether2\n\nآدرس 192.168.88.1/24 آدرس پیش‌فرض روتر برای LAN روی bridge است؛ ردیف D یعنی آدرس dynamic از DHCP."
+        },
+        {
+          "args": "route print",
+          "output": "Flags: A - active, D - dynamic, C - connect, S - static\n #      DST-ADDRESS        GATEWAY          DISTANCE\n 0 ADS  0.0.0.0/0          85.15.20.1              1\n 1 ADC  192.168.88.0/24    bridge                  0\n 2 ADC  192.168.1.0/24     ether2                  0\n\nمسیر 0.0.0.0/0 همان default route است و ترافیک اینترنت از گیت‌وی 85.15.20.1 خارج می‌شود."
+        },
+        {
+          "args": "address add {{rest}}",
+          "output": "آدرس {{rest}} روی اینترفیس اضافه شد؛ فهرست جدید را با /ip address print ببینید.\n(خروجی شبیه‌سازی‌شده)"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی زیردستورهای /ip پشتیبانی‌شده: address print / route print / address add — مثل: /ip address print"
+        }
+      ],
+      "defaultOutput": "خطا: زیردستور /ip را وارد کنید.\nشیوه صحیح: /ip address print"
+    },
+    {
+      "name": "Get-Process",
+      "usage": "Get-Process",
+      "description": "نمایش شبیه‌سازی‌شده فرآیندهای در حال اجرا با پاورشل",
+      "matches": [
+        {
+          "args": "",
+          "output": " NPM(K)    PM(M)      WS(M)     CPU(s)      Id  ProcessName\n ------    -----      -----     ------      --  -----------\n    215    512.44     768.12     142.77   12440  chrome\n     98    233.10     402.55      88.19   10920  chrome\n     44     61.12      95.30      12.40    4188  explorer\n     30     42.88      71.16       3.05    9260  Code\n     12      8.20      18.44       0.88    2456  notepad\n\nخروجی پاورشل شیءگراست؛ با پایپ‌لاین تحلیلش کنید: Get-Process | Sort-Object WS -Descending | Select-Object -First 3"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی فقط Get-Process بدون پارامتر پشتیبانی می‌شود؛ در پاورشل واقعی «Get-Process {{arg}}» فرآیندهای هم‌نام را فیلتر می‌کند."
+        }
+      ],
+      "defaultOutput": " NPM(K)    PM(M)      WS(M)     CPU(s)      Id  ProcessName\n ------    -----      -----     ------      --  -----------\n    215    512.44     768.12     142.77   12440  chrome\n     98    233.10     402.55      88.19   10920  chrome\n     44     61.12      95.30      12.40    4188  explorer"
     }
   ]
 }

@@ -7,7 +7,7 @@ import { faNum } from "@/lib/format";
 export const metadata: Metadata = {
   title: "ترمینال تمرینی",
   description:
-    "ترمینال شبیه‌سازی‌شده برای تمرین امن دستورات شبکه، CMD و گیت؛ بدون اجرای واقعی و بدون ریسک.",
+    "ترمینال شبیه‌سازی‌شده برای تمرین امن دستورات شبکه، CMD، گیت، لینوکس، سیسکو، میکروتیک و پاورشل؛ بدون اجرای واقعی و بدون ریسک.",
 };
 
 export default function TerminalPage() {

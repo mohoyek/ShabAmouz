@@ -17,6 +17,8 @@ const FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: "network", label: categoryLabels.network },
   { key: "cmd", label: categoryLabels.cmd },
   { key: "git", label: categoryLabels.git },
+  { key: "linux", label: categoryLabels.linux },
+  { key: "powershell", label: categoryLabels.powershell },
 ];
 
 /**
@@ -28,12 +30,10 @@ export function ReferenceClient({ commands }: { commands: CommandRef[] }) {
   const [category, setCategory] = useState<CategoryFilter>("all");
 
   const counts = useMemo(() => {
-    const map: Record<CategoryFilter, number> = {
-      all: commands.length,
-      network: 0,
-      cmd: 0,
-      git: 0,
-    };
+    const map = Object.fromEntries(
+      FILTERS.map((filter) => [filter.key, 0]),
+    ) as Record<CategoryFilter, number>;
+    map.all = commands.length;
     for (const command of commands) map[command.category] += 1;
     return map;
   }, [commands]);
