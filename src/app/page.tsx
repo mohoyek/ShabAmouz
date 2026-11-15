@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BookOpen,
   ListChecks,
+  Map,
   Network,
   TerminalSquare,
   Trophy,
@@ -75,6 +76,12 @@ export default function HomePage() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="gap-2 text-base">
+            <Link href="/roadmap">
+              <Map className="size-4" />
+              نقشه راه شغلی
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost" className="gap-2 text-base">
             <Link href="/terminal">
               <TerminalSquare className="size-4" />
               تمرین در ترمینال

@@ -3,7 +3,7 @@
  * اجرا: node scripts/validate-content.mjs
  * بررسی می‌کند: تعداد مسیرها (۳)، درس‌ها (۹)، دستورات مرجع (۱۵) در سه دسته
  * ۵تایی، سؤالات آزمون (۳۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
- * و ۱۰ دستور ترمینال با قاعده ping google.com.
+ * ۱۰ دستور ترمینال با قاعده ping google.com و نقشه راه ۴ مرحله‌ای.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -115,6 +115,33 @@ check(pingRule && pingRule.matches.some((m) => m.args === "google.com"), "قاع
 const gitRule = terminal.rules.find((r) => r.name === "git");
 check(gitRule && gitRule.matches.some((m) => m.args === "status"), "قاعده git status وجود ندارد");
 
+/* ------------------------------- نقشه راه ------------------------------- */
+const roadmap = JSON.parse(fs.readFileSync(path.join(contentDir, "roadmap.json"), "utf-8"));
+check(typeof roadmap.intro === "string" && roadmap.intro.length > 20, "مقدمه نقشه راه کوتاه است");
+check(typeof roadmap.standardsNote === "string" && roadmap.standardsNote.length > 20, "توضیح مبنا (standardsNote) نقشه راه کوتاه است");
+check(Array.isArray(roadmap.levels) && roadmap.levels.length === 4, `نقشه راه باید دقیقاً ۴ مرحله داشته باشد (فعلاً: ${roadmap.levels?.length ?? 0})`);
+const levelIds = new Set();
+for (const level of roadmap.levels ?? []) {
+  check(levelIds.has(level.id) === false, `شناسه مرحله تکراری در نقشه راه: ${level.id}`);
+  levelIds.add(level.id);
+  check(Number.isInteger(level.order) && level.order >= 1 && level.order <= 4, `ترتیب مرحله ${level.id} باید ۱ تا ۴ باشد`);
+  check(typeof level.title === "string" && level.title.length > 2, `عنوان مرحله ${level.id} نامعتبر است`);
+  check(typeof level.englishTitle === "string" && level.englishTitle.length > 2, `عنوان انگلیسی مرحله ${level.id} نامعتبر است`);
+  check(typeof level.duration === "string" && level.duration.length > 2, `مدت مرحله ${level.id} نامعتبر است`);
+  check(typeof level.summary === "string" && level.summary.length > 30, `توضیح مرحله ${level.id} کوتاه است`);
+  check(Array.isArray(level.skills) && level.skills.length >= 4, `مرحله ${level.id} باید حداقل ۴ مهارت داشته باشد`);
+  check(Array.isArray(level.certifications) && level.certifications.length >= 2, `مرحله ${level.id} باید حداقل ۲ مدرک جهانی داشته باشد`);
+  for (const cert of level.certifications ?? []) {
+    check(typeof cert.name === "string" && cert.name.length > 1, `نام مدرک در مرحله ${level.id} نامعتبر است`);
+    check(typeof cert.issuer === "string" && cert.issuer.length > 1, `نهاد صدور مدرک ${cert.name} نامعتبر است`);
+    check(typeof cert.note === "string" && cert.note.length > 5, `توضیح مدرک ${cert.name} کوتاه است`);
+  }
+  check(Array.isArray(level.relatedPathIds), `relatedPathIds مرحله ${level.id} باید آرایه باشد`);
+  for (const pid of level.relatedPathIds ?? []) {
+    check(validPathIds.has(pid), `مسیر مرتبط نامعتبر در مرحله ${level.id}: ${pid}`);
+  }
+}
+
 /* ------------------------------- نتیجه ------------------------------- */
 if (errors.length > 0) {
   console.error(`✗ اعتبارسنجی محتوا با ${errors.length} خطا شکست خورد:\n`);
@@ -127,4 +154,5 @@ if (errors.length > 0) {
   console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git})`);
   console.log(`  سؤالات آزمون: ${questions.length} (هر مسیر ۷ چهارگزینه‌ای + ۳ جای‌خالی)`);
   console.log(`  دستورات ترمینال: ${terminal.rules.length} (شامل ping google.com و git با زیردستورها)`);
+  console.log(`  نقشه راه: ${roadmap.levels.length} مرحله (${roadmap.levels.map((l) => l.title).join(" ← ")})`);
 }

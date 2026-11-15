@@ -9,6 +9,7 @@ import type {
   LessonFrontmatter,
   PathId,
   QuizQuestion,
+  RoadmapContent,
   TerminalContent,
 } from "@/lib/types";
 
@@ -117,4 +118,11 @@ export const getQuizQuestions = cache((pathId?: PathId): QuizQuestion[] => {
 
 export const getTerminalContent = cache((): TerminalContent => {
   return readJsonFile<TerminalContent>("terminal.json");
+});
+
+/* --------------------------------- نقشه راه --------------------------------- */
+
+export const getRoadmap = cache((): RoadmapContent => {
+  const content = readJsonFile<RoadmapContent>("roadmap.json");
+  return { ...content, levels: [...content.levels].sort((a, b) => a.order - b.order) };
 });

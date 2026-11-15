@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/", label: "خانه" },
   { href: "/courses", label: "مسیرهای یادگیری" },
+  { href: "/roadmap", label: "نقشه راه" },
   { href: "/reference", label: "مرجع دستورات" },
   { href: "/quiz", label: "آزمون" },
   { href: "/terminal", label: "ترمینال" },
@@ -62,7 +63,7 @@ export function Navbar() {
         </Link>
 
         {/* لینک‌های دسکتاپ */}
-        <nav className="hidden items-center gap-1 md:flex" aria-label="ناوبری اصلی">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="ناوبری اصلی">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -84,7 +85,7 @@ export function Navbar() {
           {/* منوی موبایل */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="باز کردن منو">
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="باز کردن منو">
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>

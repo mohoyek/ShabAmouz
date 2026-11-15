@@ -15,6 +15,9 @@ export function Footer() {
           <Link href="/courses" className="transition-colors hover:text-foreground">
             مسیرهای یادگیری
           </Link>
+          <Link href="/roadmap" className="transition-colors hover:text-foreground">
+            نقشه راه
+          </Link>
           <Link href="/reference" className="transition-colors hover:text-foreground">
             مرجع دستورات
           </Link>

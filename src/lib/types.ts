@@ -143,6 +143,50 @@ export interface TerminalContent {
   rules: TerminalRule[];
 }
 
+/* ---------------------------------- نقشه راه ---------------------------------- */
+
+/** یک مدرک یا استاندارد جهانی در هر مرحله از نقشه راه */
+export interface RoadmapCertification {
+  /** نام مدرک مثل CCNA یا CompTIA Network+ (LTR) */
+  name: string;
+  /** نهاد صدور مدرک مثل Cisco یا CompTIA */
+  issuer: string;
+  /** توضیح فارسی کوتاه درباره جایگاه مدرک */
+  note: string;
+}
+
+/** یک مرحله از نقشه راه شغلی شبکه — منبع: content/roadmap.json */
+export interface RoadmapLevel {
+  /** شناسه یکتای مرحله مثل fundamentals */
+  id: string;
+  /** ترتیب مرحله (از ۱) */
+  order: number;
+  /** عنوان فارسی مرحله مثل «شبکه پایه» */
+  title: string;
+  /** معادل انگلیسی عنوان (LTR) */
+  englishTitle: string;
+  /** مدت تقریبی گذراندن مرحله (متن فارسی) */
+  duration: string;
+  /** توضیح فارسی مرحله */
+  summary: string;
+  /** مهارت‌هایی که در این مرحله کسب می‌شود */
+  skills: string[];
+  /** مدارک و استانداردهای جهانی مرتبط با این مرحله */
+  certifications: RoadmapCertification[];
+  /** مسیرهای یادگیری شب‌آموز که این مرحله را پوشش می‌دهند */
+  relatedPathIds: PathId[];
+}
+
+/** کل فایل roadmap.json */
+export interface RoadmapContent {
+  /** مقدمه فارسی بالای صفحه نقشه راه */
+  intro: string;
+  /** توضیح مبنا و ملاک بودن مدارک جهانی (پایین صفحه) */
+  standardsNote: string;
+  /** مرحله‌های نقشه راه به ترتیب */
+  levels: RoadmapLevel[];
+}
+
 /* ---------------------------------- پیشرفت کاربر ---------------------------------- */
 
 /** رکورد تکمیل یک درس در localStorage */
