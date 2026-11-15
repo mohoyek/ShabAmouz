@@ -3,7 +3,8 @@
  * اجرا: node scripts/validate-content.mjs
  * بررسی می‌کند: تعداد مسیرها (۱۴)، درس‌ها (۴۲)، دستورات مرجع (۲۵) در پنج دسته
  * ۵تایی، سؤالات آزمون (۱۴۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
- * ۱۶ دستور ترمینال با قاعده ping google.com و git status و نقشه راه دو مسیره ۴ مرحله‌ای.
+ * ۱۶ قاعده ترمینال (بدون help/cls که پویا هستند) با example و پوشش هر ۱۴ مسیر،
+ * و نقشه راه دو مسیره ۴ مرحله‌ای.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -119,19 +120,40 @@ for (const id of validPathIds) {
 /* -------------------------------- ترمینال -------------------------------- */
 const terminal = JSON.parse(fs.readFileSync(path.join(contentDir, "terminal.json"), "utf-8"));
 const expectedCommands = [
-  "help", "ping", "ipconfig", "tracert", "cd", "dir", "mkdir", "echo", "cls", "git",
-  "ls", "chmod", "systemctl", "show", "/ip", "Get-Process",
+  "ping", "ipconfig", "tracert", "cd", "dir", "mkdir", "echo", "git",
+  "ls", "chmod", "systemctl", "pwd", "cat", "show", "/ip", "Get-Process",
 ];
-check(terminal.rules.length === 16, `تعداد دستورات ترمینال باید ۱۶ باشد (فعلاً: ${terminal.rules.length})`);
+check(terminal.rules.length === 16, `تعداد قواعد ترمینال باید ۱۶ باشد (فعلاً: ${terminal.rules.length})`);
 check(typeof terminal.welcome === "string" && terminal.welcome.length > 5, "پیام خوش‌آمد ترمینال نامعتبر است");
 check(typeof terminal.unknownCommand === "string" && terminal.unknownCommand.includes("{{cmd}}"), "پیام unknownCommand باید جانگه‌دار {{cmd}} داشته باشد");
+check(typeof terminal.lessonWelcome === "string" && terminal.lessonWelcome.includes("{{lesson}}") && terminal.lessonWelcome.includes("{{count}}"), "lessonWelcome باید جانگه‌دارهای {{lesson}} و {{count}} داشته باشد");
+// help و cls در موتور به‌صورت پویا ساخته می‌شوند و نباید در JSON تعریف شوند
+for (const dynamic of ["help", "cls"]) {
+  check(!terminal.rules.some((r) => r.name.toLowerCase() === dynamic), `دستور '${dynamic}' نباید در terminal.json تعریف شود (در موتور پویا ساخته می‌شود)`);
+}
+const ruleNames = new Set();
+const coveredPaths = new Set();
+for (const rule of terminal.rules) {
+  check(ruleNames.has(rule.name.toLowerCase()) === false, `دستور ترمینال تکراری: ${rule.name}`);
+  ruleNames.add(rule.name.toLowerCase());
+  check(Array.isArray(rule.matches) && rule.matches.length > 0, `دستور ${rule.name} قاعده تطبیق ندارد`);
+  check(typeof rule.defaultOutput === "string", `دستور ${rule.name} خروجی پیش‌فرض ندارد`);
+  check(typeof rule.usage === "string" && rule.usage.length > 2, `دستور ${rule.name} usage ندارد`);
+  check(typeof rule.example === "string" && rule.example.toLowerCase().startsWith(rule.name.toLowerCase()), `دستور ${rule.name} باید example معتبر (شروع با نام دستور) داشته باشد`);
+  check(Array.isArray(rule.paths), `دستور ${rule.name} باید فیلد paths (آرایه، می‌تواند خالی) داشته باشد`);
+  if (Array.isArray(rule.paths)) {
+    for (const pid of rule.paths) {
+      check(validPathIds.has(pid), `مسیر نامعتبر در paths دستور ${rule.name}: ${pid}`);
+      coveredPaths.add(pid);
+    }
+  }
+}
+// هر ۱۴ مسیر باید حداقل یک دستور تمرینی داشته باشد (ترمینال تمرینی داخل درس‌ها)
+for (const pid of validPathIds) {
+  check(coveredPaths.has(pid), `مسیر ${pid} هیچ دستور تمرینی مرتبطی ندارد (فیلد paths)`);
+}
 for (const name of expectedCommands) {
-  const rule = terminal.rules.find((r) => r.name === name);
-  check(rule !== undefined, `دستور ترمینال '${name}' تعریف نشده است`);
-  if (!rule) continue;
-  check(Array.isArray(rule.matches) && rule.matches.length > 0, `دستور ${name} قاعده تطبیق ندارد`);
-  check(typeof rule.defaultOutput === "string", `دستور ${name} خروجی پیش‌فرض ندارد`);
-  check(typeof rule.usage === "string" && rule.usage.length > 2, `دستور ${name} usage ندارد`);
+  check(ruleNames.has(name.toLowerCase()), `دستور ترمینال '${name}' تعریف نشده است`);
 }
 const pingRule = terminal.rules.find((r) => r.name === "ping");
 check(pingRule && pingRule.matches.some((m) => m.args === "google.com"), "قاعده ping google.com وجود ندارد (معیار پذیرش)");
@@ -145,8 +167,6 @@ const lsRule = terminal.rules.find((r) => r.name === "ls");
 check(lsRule && lsRule.matches.some((m) => m.args === "-la"), "قاعده ls -la وجود ندارد");
 const psRule = terminal.rules.find((r) => r.name.toLowerCase() === "get-process");
 check(psRule && psRule.matches.some((m) => m.args === ""), "قاعده Get-Process بدون پارامتر وجود ندارد");
-const helpRule = terminal.rules.find((r) => r.name === "help");
-check(helpRule && helpRule.defaultOutput.includes("۱۶ دستور"), "خروجی help باید فهرست ۱۶ دستوری داشته باشد");
 
 /* ------------------------------- نقشه راه ------------------------------- */
 const roadmap = JSON.parse(fs.readFileSync(path.join(contentDir, "roadmap.json"), "utf-8"));
@@ -197,6 +217,6 @@ if (errors.length > 0) {
   console.log(`  درس‌ها: ${lessonCount} × MDX با فرانت‌متر معتبر`);
   console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git}, لینوکس=${byCategory.linux}, پاورشل=${byCategory.powershell})`);
   console.log(`  سؤالات آزمون: ${questions.length} (هر مسیر ۷ چهارگزینه‌ای + ۳ جای‌خالی)`);
-  console.log(`  دستورات ترمینال: ${terminal.rules.length} (شامل ping google.com، git، ls، systemctl، show، /ip و Get-Process)`);
+  console.log(`  قواعد ترمینال: ${terminal.rules.length} (+ help و cls پویا؛ پوشش ${coveredPaths.size} مسیر؛ شامل ping google.com، git، ls، systemctl، pwd، cat، show، /ip و Get-Process)`);
   console.log(`  نقشه راه: ${roadmap.tracks.length} مسیر شغلی — ${roadmap.tracks.map((t) => `${t.title}: ${t.levels.map((l) => l.title).join(" ← ")}`).join(" | ")}`);
 }

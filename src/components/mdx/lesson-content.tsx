@@ -1,11 +1,16 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { TryItButton } from "@/components/mdx/try-it-button";
 
 /**
  * رندر بدنه درس‌ها (Markdown/MDX) با react-markdown + remark-gfm.
  * بلوک‌های کد و کد درون‌خطی همیشه LTR رندر می‌شوند (کلاس کمکی ltr-content)
  * و متن فارسی RTL می‌ماند. این کامپوننت در سمت سرور اجرا می‌شود.
+ *
+ * اگر فهرست tryCommands (دستورهای پشتیبانی‌شده ترمینال تمرینی همان مسیر) داده
+ * شود، روی هر بلوک کدی که خط اولش با یکی از این دستورها شروع شود دکمه
+ * «امتحان کن در ترمینال» می‌نشیند تا کاربر موقع خواندن همان دستور را اجرا کند.
  */
 
 type HeadingProps = ComponentPropsWithoutRef<"h2">;
@@ -27,21 +32,63 @@ function extractText(node: ReactNode): string {
   return "";
 }
 
-function CodeBlock({ children }: { children?: ReactNode }) {
+/**
+ * استخراج اولین دستور قابل تمرین از بلوک کد —
+ * پیشوندهای پرامپت ($، >، PS>) و sudo حذف و توکن اول با فهرست دستورهای
+ * پشتیبانی‌شده مقایسه می‌شود؛ اگر هیچ خطی نخواند null برمی‌گردد
+ * (بلوک‌های خروجی/نمونه بدون دکمه می‌مانند).
+ */
+export function extractTryCommand(code: string, tryCommands: string[]): string | null {
+  for (const rawLine of code.split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#") || line.startsWith("//")) continue;
+    let cmd = line.replace(/^(\$\s+|>\s+|PS>\s+)/, "").trim();
+    if (cmd.startsWith("sudo ")) cmd = cmd.slice(5).trim();
+    // توضیح انتهای خط (بعد از # یا //) بخشی از دستور نیست
+    cmd = cmd.replace(/\s+(#|\/\/).*$/, "").trim();
+    const first = cmd.split(/\s+/)[0]?.toLowerCase();
+    if (first && tryCommands.includes(first)) return cmd;
+  }
+  return null;
+}
+
+function CodeBlock({
+  children,
+  tryCommand,
+}: {
+  children?: ReactNode;
+  tryCommand?: string;
+}) {
   const code = extractText(children).replace(/\n$/, "");
   return (
     <div
       dir="ltr"
-      className="ltr-content thin-scrollbar my-5 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950"
+      className="ltr-content thin-scrollbar relative my-5 overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-950"
     >
-      <pre className="p-4 text-left font-mono text-[13px] leading-6 text-zinc-100">
+      {tryCommand ? (
+        <div className="absolute right-2 top-2 z-10">
+          <TryItButton command={tryCommand} />
+        </div>
+      ) : null}
+      <pre
+        className={`p-4 text-left font-mono text-[13px] leading-6 text-zinc-100 ${
+          tryCommand ? "pt-12" : ""
+        }`}
+      >
         <code>{code}</code>
       </pre>
     </div>
   );
 }
 
-export function LessonContent({ body }: { body: string }) {
+export function LessonContent({
+  body,
+  tryCommands,
+}: {
+  body: string;
+  /** نام دستورهای پشتیبانی‌شده ترمینال تمرینی این مسیر (کوچک‌شده) */
+  tryCommands?: string[];
+}) {
   return (
     <div className="leading-8 text-foreground/90">
       <ReactMarkdown
@@ -81,7 +128,16 @@ export function LessonContent({ body }: { body: string }) {
               {children}
             </blockquote>
           ),
-          pre: ({ children }) => <CodeBlock>{children}</CodeBlock>,
+          pre: ({ children }) => {
+            if (!tryCommands || tryCommands.length === 0) {
+              return <CodeBlock>{children}</CodeBlock>;
+            }
+            const code = extractText(children).replace(/\n$/, "");
+            const tryCommand = extractTryCommand(code, tryCommands);
+            return (
+              <CodeBlock tryCommand={tryCommand ?? undefined}>{children}</CodeBlock>
+            );
+          },
           code: ({ children }) => {
             // کد درون‌خطی — مثل نام دستورها؛ بلوک کد به‌طور کامل در pre رندر می‌شود
             return (

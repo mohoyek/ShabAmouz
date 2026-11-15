@@ -1,8 +1,13 @@
 import type { TerminalContent, TerminalRule } from "@/lib/types";
+import { faNum } from "@/lib/format";
 
 /**
  * موتور اجرای دستورهای ترمینال شبیه‌سازی‌شده — تابع خالص و بدون وابستگی به DOM.
  * هیچ دستوری واقعاً اجرا نمی‌شود؛ خروجی‌ها از قواعد content/terminal.json می‌آیند.
+ *
+ * دستورهای سیستمی که در JSON تعریف نمی‌شوند (تا فهرست راهنما همیشه دقیق بماند):
+ *  - help: فهرست دستورهای پویا از همین قواعد (rules) ساخته می‌شود
+ *  - cls و clear: پاک‌کردن صفحه
  *
  * منطق تطبیق آرگومان‌ها (به ترتیب اولویت):
  *  ۱) تطبیق دقیق (بدون حساسیت به بزرگی/کوچکی حروف) مثل "google.com" یا "add ."
@@ -91,6 +96,22 @@ function pickMatch(matches: TerminalRule["matches"], args: string): MatchSelecti
 }
 
 /**
+ * ساخت خروجی دستور help به‌صورت پویا از قواعد موجود در content —
+ * به این ترتیب فهرست راهنما همیشه دقیقاً همان دستورهای فعال زمینه جاری است
+ * (ترمینال کامل صفحه /terminal یا ترمینال تمرینی داخل درس‌ها).
+ */
+export function buildHelpOutput(content: TerminalContent): string[] {
+  const header =
+    `دستورهای پشتیبانی‌شده (${faNum(content.rules.length)} دستور + help و cls):\n`;
+  const rows = content.rules.map(
+    (rule) => `  ${rule.name.padEnd(14)} ${rule.description}`,
+  );
+  const footer =
+    "\ncls صفحه را پاک می‌کند؛ فلش بالا/پایین تاریخچه دستورها را مرور می‌کند.\nنکته: این ترمینال شبیه‌سازی‌شده است و خروجی‌ها از پیش تعریف‌شده‌اند.";
+  return [header, "", ...rows, footer].join("\n").split("\n");
+}
+
+/**
  * اجرای شبیه‌سازی‌شده یک خط دستور.
  * raw همان متنی است که کاربر بعد از پرامپت تایپ کرده است.
  */
@@ -103,17 +124,16 @@ export function executeCommand(raw: string, content: TerminalContent): TerminalC
   const name = typedName.toLowerCase();
   const args = spaceIndex === -1 ? "" : trimmed.slice(spaceIndex + 1);
 
+  // دستورهای سیستمی پویا — قبل از جست‌وجوی قواعد JSON بررسی می‌شوند
+  if (name === "help") return { clear: false, lines: buildHelpOutput(content) };
+  if (name === "cls" || name === "clear") return { clear: true, lines: [] };
+
   const rule = content.rules.find((r) => r.name.toLowerCase() === name);
   if (!rule) {
     return {
       clear: false,
       lines: substitute(content.unknownCommand, { cmd: typedName }).split("\n"),
     };
-  }
-
-  // cls فقط صفحه را پاک می‌کند
-  if (rule.name.toLowerCase() === "cls") {
-    return { clear: true, lines: [] };
   }
 
   const match = pickMatch(rule.matches, args);

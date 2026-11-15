@@ -14,9 +14,35 @@ import type { TerminalContent } from "@/lib/types";
  * متن RTL/bidi پشتیبانی نمی‌کند و خروجی فارسی ناخوانا می‌شد (تست تجربی انجام شد).
  * این کامپوننت رندر فارسی را به موتور bidi مرورگر می‌سپارد و خروجی‌ها دقیقاً
  * همان رشته‌های predefined فایل content/terminal.json هستند.
+ *
+ * همین کامپوننت در دو زمینه استفاده می‌شود:
+ *  - صفحه کامل ترمینال (/terminal) با همه قاعده‌ها
+ *  - بخش «تمرین عملی» داخل هر درس با قاعده‌های همان مسیر (enableTryEvents)
+ * و با props پرامپت، ارتفاع و دستورهای سریع خود را از زمینه می‌گیرد.
  */
 
+/** نام رخداد سفارشی «امتحان کن» — از دکمه بلوک‌های کد درس منتشر می‌شود */
+export const TRY_COMMAND_EVENT = "shabamouz:try-command";
+
 type Tone = "default" | "dim" | "error";
+
+export interface SimulatedTerminalProps {
+  content: TerminalContent;
+  /** پرامپت پایه (بدون پسوند) — مثلاً پرامپت Bash برای درس‌های لینوکس */
+  initialPrompt?: string;
+  /** پسوند پرامپت مثل > یا $ */
+  promptSuffix?: string;
+  /** دستورهای سریع یک‌کلیکی؛ پیش‌فرض: نمونه همان قاعده‌های content */
+  quickCommands?: string[];
+  /** حداکثر تعداد دکمه دستور سریع (برای جلوگیری از شلوغی) */
+  maxQuickCommands?: number;
+  /** کلاس ارتفاع ناحیه خروجی */
+  heightClass?: string;
+  /** متن نوار عنوان پنجره ترمینال */
+  title?: string;
+  /** شنیدن رخداد «امتحان کن» بلوک‌های کد درس (فقط ترمینال داخل درس) */
+  enableTryEvents?: boolean;
+}
 
 interface CommandLine {
   kind: "command";
@@ -35,22 +61,6 @@ interface OutputLine {
 
 type TerminalLine = CommandLine | OutputLine;
 
-/** پرامپت اولیه شبیه‌سازی (با دستور cd از خروجی «مسیر جاری» به‌روز می‌شود) */
-const DEFAULT_PROMPT = "C:\\Users\\Ali";
-
-/** دستورهای سریع برای اجرای با یک کلیک */
-const QUICK_COMMANDS = [
-  "help",
-  "ping google.com",
-  "ipconfig /all",
-  "tracert google.com",
-  "dir",
-  "git status",
-  "ls -la",
-  "show ip interface brief",
-  "Get-Process",
-];
-
 function detectTone(text: string): Tone {
   const trimmed = text.trimStart();
   if (trimmed.startsWith("خطا") || trimmed.includes("شناخته‌شده نیست")) return "error";
@@ -58,19 +68,31 @@ function detectTone(text: string): Tone {
   return "default";
 }
 
-export function SimulatedTerminal({ content }: { content: TerminalContent }) {
+export function SimulatedTerminal({
+  content,
+  initialPrompt = "C:\\Users\\Ali",
+  promptSuffix = ">",
+  quickCommands,
+  maxQuickCommands = Number.POSITIVE_INFINITY,
+  heightClass = "h-[420px]",
+  title = "ShabAmouz — simulated terminal",
+  enableTryEvents = false,
+}: SimulatedTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [value, setValue] = useState("");
   const [caret, setCaret] = useState(0);
   const [focused, setFocused] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
-  const [promptPath, setPromptPath] = useState(DEFAULT_PROMPT);
+  const [promptPath, setPromptPath] = useState(initialPrompt + promptSuffix);
+  const [flash, setFlash] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const idRef = useRef(0);
   const didInitRef = useRef(false);
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const markTerminalUsed = useProgressStore((s) => s.markTerminalUsed);
 
@@ -110,11 +132,11 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
       ];
 
       const cwd = extractCwdLine(result.lines);
-      if (cwd) setPromptPath(cwd);
+      if (cwd) setPromptPath(cwd + promptSuffix);
 
       setLines((prev) => [...prev, ...added]);
     },
-    [content, markTerminalUsed, promptPath],
+    [content, markTerminalUsed, promptPath, promptSuffix],
   );
 
   /** ثبت دستور تایپ‌شده: echo + اجرا + به‌روزرسانی تاریخچه */
@@ -170,6 +192,26 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
     pushWelcome();
   }, [pushWelcome]);
 
+  // رخداد «امتحان کن» از بلوک‌های کد درس: اجرای دستور + اسکرول + فلش سبز
+  useEffect(() => {
+    if (!enableTryEvents) return;
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ command?: string }>).detail;
+      const command = detail?.command?.trim();
+      if (!command) return;
+      runCommand(command);
+      rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setFlash(true);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      flashTimerRef.current = setTimeout(() => setFlash(false), 1400);
+    };
+    window.addEventListener(TRY_COMMAND_EVENT, handler);
+    return () => {
+      window.removeEventListener(TRY_COMMAND_EVENT, handler);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    };
+  }, [enableTryEvents, runCommand]);
+
   // اسکرول خودکار به پایین با هر خروجی جدید
   useEffect(() => {
     const el = scrollRef.current;
@@ -184,7 +226,7 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
   };
 
   const resetTerminal = () => {
-    setPromptPath(DEFAULT_PROMPT);
+    setPromptPath(initialPrompt + promptSuffix);
     setValue("");
     setCaret(0);
     setHistoryIndex(null);
@@ -192,14 +234,24 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
     focusInput();
   };
 
+  // دستورهای سریع از داده قاعده‌ها می‌آیند (نه لیست دستی) تا همیشه هم‌خوان با زمینه باشند
+  const quick = (quickCommands ?? content.rules.map((r) => r.example)).slice(
+    0,
+    maxQuickCommands,
+  );
+
   const before = value.slice(0, caret);
   const at = value.slice(caret, caret + 1);
   const after = value.slice(caret + 1);
 
   return (
     <div
+      ref={rootRef}
       dir="ltr"
-      className="ltr-content overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-lg"
+      className={
+        "ltr-content scroll-mt-28 overflow-hidden rounded-xl border bg-zinc-950 shadow-lg transition-colors duration-500 " +
+        (flash ? "border-emerald-400 ring-2 ring-emerald-400/40" : "border-zinc-800")
+      }
     >
       {/* نوار بالای پنجره ترمینال */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5">
@@ -207,9 +259,7 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
           <span className="size-3 rounded-full bg-red-500/80" />
           <span className="size-3 rounded-full bg-amber-500/80" />
           <span className="size-3 rounded-full bg-emerald-500/80" />
-          <span className="ms-2 font-mono text-xs text-zinc-400">
-            ShabAmouz — simulated terminal
-          </span>
+          <span className="ms-2 font-mono text-xs text-zinc-400">{title}</span>
         </div>
         <button
           type="button"
@@ -223,9 +273,9 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
         </button>
       </div>
 
-      {/* دستورهای سریع */}
+      {/* دستورهای سریع — از نمونه‌های همان قاعده‌های زمینه جاری */}
       <div className="flex flex-wrap items-center gap-2 border-b border-zinc-800 px-4 py-2">
-        {QUICK_COMMANDS.map((cmd) => (
+        {quick.map((cmd) => (
           <button
             key={cmd}
             type="button"
@@ -244,14 +294,14 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
       <div
         ref={scrollRef}
         onClick={focusInput}
-        className="thin-scrollbar relative h-[420px] cursor-text overflow-y-auto p-4 text-[13px] leading-6 text-zinc-200"
+        className={`thin-scrollbar relative cursor-text overflow-y-auto p-4 text-[13px] leading-6 text-zinc-200 ${heightClass}`}
         style={{ fontFamily: "var(--font-geist-mono), var(--font-vazirmatn), monospace" }}
         aria-label="ترمینال شبیه‌سازی‌شده"
       >
         {lines.map((line) =>
           line.kind === "command" ? (
             <div key={line.id} className="flex flex-wrap items-baseline whitespace-pre-wrap">
-              <span className="font-bold text-emerald-400">{line.prompt}&gt;</span>
+              <span className="font-bold text-emerald-400">{line.prompt}</span>
               <span className="text-zinc-100">{line.command}</span>
             </div>
           ) : (
@@ -274,7 +324,7 @@ export function SimulatedTerminal({ content }: { content: TerminalContent }) {
 
         {/* سطر پرامپت فعال با مکان‌نمای چشمک‌زن */}
         <div className="flex flex-wrap items-baseline whitespace-pre-wrap">
-          <span className="font-bold text-emerald-400">{promptPath}&gt;</span>
+          <span className="font-bold text-emerald-400">{promptPath}</span>
           <span className="text-zinc-100">{before}</span>
           <span
             aria-hidden

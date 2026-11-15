@@ -12,6 +12,7 @@ import type {
   RoadmapContent,
   TerminalContent,
 } from "@/lib/types";
+import { faNum } from "@/lib/format";
 
 /**
  * لایه بارگذاری محتوا — فقط در سمت سرور اجرا می‌شود.
@@ -119,6 +120,28 @@ export const getQuizQuestions = cache((pathId?: PathId): QuizQuestion[] => {
 export const getTerminalContent = cache((): TerminalContent => {
   return readJsonFile<TerminalContent>("terminal.json");
 });
+
+/**
+ * محتوای ترمینال تمرینی مخصوص یک درس — فقط قاعده‌هایی که به مسیر آن درس مربوط‌اند
+ * (قواعد بدون paths در همه زمینه‌ها فعال‌اند). پیام خوش‌آمد هم با عنوان درس و
+ * تعداد دستورهای پشتیبانی‌شده همان مسیر جایگزین می‌شود.
+ */
+export const getTerminalContentForLesson = cache(
+  (pathId: PathId, lessonTitle: string): TerminalContent => {
+    const full = getTerminalContent();
+    const rules = full.rules.filter(
+      (rule) => !rule.paths || rule.paths.length === 0 || rule.paths.includes(pathId),
+    );
+    return {
+      welcome: full.lessonWelcome
+        .replaceAll("{{lesson}}", lessonTitle)
+        .replaceAll("{{count}}", faNum(rules.length)),
+      unknownCommand: full.unknownCommand,
+      lessonWelcome: full.lessonWelcome,
+      rules,
+    };
+  },
+);
 
 /* --------------------------------- نقشه راه --------------------------------- */
 

@@ -25,21 +25,24 @@ export default function TerminalPage() {
         </p>
       </header>
 
-      {/* ترمینال تعاملی — خروجی‌ها از content/terminal.json */}
-      <SimulatedTerminal content={content} />
+      {/* ترمینال تعاملی — خروجی‌ها از content/terminal.json؛ help و cls پویا ساخته می‌شوند */}
+      <SimulatedTerminal content={content} maxQuickCommands={10} />
 
       <p className="mt-2 text-xs text-muted-foreground">
         نکته‌ها: با فلش‌های بالا و پایین به دستورهای قبلی برگردید؛ با{" "}
         <code dir="ltr" className="ltr-content rounded bg-muted px-1.5 py-0.5 font-mono">cls</code>{" "}
-        صفحه پاک می‌شود؛ دستور{" "}
+        (یا{" "}
+        <code dir="ltr" className="ltr-content rounded bg-muted px-1.5 py-0.5 font-mono">clear</code>
+        ) صفحه پاک می‌شود؛ دستور{" "}
         <code dir="ltr" className="ltr-content rounded bg-muted px-1.5 py-0.5 font-mono">cd</code>{" "}
-        پرامپت را به‌روز می‌کند. دکمه reset هم ترمینال را از نو شروع می‌کند.
+        پرامپت را به‌روز می‌کند. دکمه reset هم ترمینال را از نو شروع می‌کند. در هر درس
+        هم بخش «تمرین عملی» با دستورهای همان مسیر در پایین صفحه درس وجود دارد.
       </p>
 
       {/* برگه تقلب: دستورهای پشتیبانی‌شده — داده از terminal.json */}
       <section className="mt-10">
         <h2 className="mb-4 text-xl font-extrabold">
-          دستورهای پشتیبانی‌شده ({faNum(content.rules.length)} دستور)
+          دستورهای پشتیبانی‌شده ({faNum(content.rules.length)} دستور + help و cls)
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {content.rules.map((rule) => (

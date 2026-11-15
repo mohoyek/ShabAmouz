@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ChevronLeft, Clock3 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, Clock3, TerminalSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LessonContent } from "@/components/mdx/lesson-content";
 import { LessonCompleteButton } from "@/components/courses/lesson-complete-button";
+import { SimulatedTerminal } from "@/components/terminal/simulated-terminal";
 import {
   getAllLessonParams,
   getLesson,
   getLessonNeighbors,
   getLearningPath,
+  getTerminalContentForLesson,
   isPathId,
 } from "@/lib/content";
+import { getPromptForPath } from "@/lib/terminal-prompts";
 import { pathStyles } from "@/lib/path-styles";
 import { faNum } from "@/lib/format";
 
@@ -48,6 +51,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const { prev, next } = getLessonNeighbors(path, slug);
   const fm = lesson.frontmatter;
   const style = pathStyles[learningPath.color];
+
+  // ترمینال تمرینی همان مسیر + پرامپت متناسب با خانواده فناوری (Bash/IOS/RouterOS/…)
+  const practiceTerminal = getTerminalContentForLesson(path, fm.title);
+  const promptStyle = getPromptForPath(path);
+  const tryCommands = practiceTerminal.rules.map((r) => r.name.toLowerCase());
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:py-14">
@@ -85,10 +93,52 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </p>
       </header>
 
-      {/* بدنه درس — بلوک‌های کد به‌صورت LTR رندر می‌شوند */}
+      {/* بدنه درس — بلوک‌های کد به‌صورت LTR رندر می‌شوند؛ بلوک‌های قابل تمرین دکمه «امتحان کن» دارند */}
       <article>
-        <LessonContent body={lesson.body} />
+        <LessonContent body={lesson.body} tryCommands={tryCommands} />
       </article>
+
+      {/* تمرین عملی در همان صفحه — کاربر موقع خواندن دستورها را امتحان می‌کند */}
+      {practiceTerminal.rules.length > 0 ? (
+        <section
+          id="practice-terminal"
+          aria-label="تمرین عملی درس"
+          className="mt-12 scroll-mt-24"
+        >
+          <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 text-xl font-extrabold">
+                <TerminalSquare className="size-5 text-emerald-600 dark:text-emerald-400" />
+                تمرین عملی همین درس
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm leading-6 text-muted-foreground">
+                ترمینال شبیه‌سازی‌شده امن است: هیچ دستوری واقعاً اجرا نمی‌شود و اشتباه
+                کردن هزینه‌ای ندارد. روی بلوک‌های کد بالا دکمه «امتحان کن» هست، یا همان
+                جا دستور بنویسید.
+              </p>
+            </div>
+            <div className="text-end text-xs text-muted-foreground">
+              <span className="inline-block rounded-full border bg-muted/50 px-2.5 py-1">
+                {faNum(practiceTerminal.rules.length)} دستور پشتیبانی‌شده
+              </span>
+              <Link
+                href="/terminal"
+                className="mt-1.5 block text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-600 dark:text-emerald-400"
+              >
+                ترمینال کامل با همه دستورها
+              </Link>
+            </div>
+          </header>
+          <SimulatedTerminal
+            content={practiceTerminal}
+            initialPrompt={promptStyle.initialPrompt}
+            promptSuffix={promptStyle.promptSuffix}
+            heightClass="h-[360px]"
+            title="ShabAmouz — lesson practice"
+            enableTryEvents
+          />
+        </section>
+      ) : null}
 
       {/* ثبت تکمیل */}
       <div className="mt-12 flex flex-col items-center gap-3 rounded-2xl border bg-muted/30 p-6 text-center sm:flex-row sm:justify-between sm:text-start">

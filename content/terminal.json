@@ -1,23 +1,14 @@
 {
   "welcome": "شب‌آموز ترمینال شبیه‌سازی‌شده — دستور help را برای دیدن فهرست دستورها تایپ کنید.",
   "unknownCommand": "دستور '{{cmd}}' شناخته‌شده نیست. فهرست دستورهای پشتیبانی‌شده را با help ببینید.",
+  "lessonWelcome": "حالت تمرین درس «{{lesson}}» — {{count}} دستور در این بخش پشتیبانی می‌شود.\nدستورهای همین درس را اینجا امتحان کنید؛ با help فهرست کامل و با cls صفحه را پاک کنید.\n(شبیه‌ساز امن است: هیچ دستوری واقعاً اجرا نمی‌شود)",
   "rules": [
-    {
-      "name": "help",
-      "usage": "help",
-      "description": "نمایش فهرست دستورهای پشتیبانی‌شده در این ترمینال",
-      "matches": [
-        {
-          "args": "*",
-          "output": "دستورهای پشتیبانی‌شده (۱۶ دستور):\n\n  help         نمایش همین راهنما\n  ping         تست دسترسی به یک میزبان\n  ipconfig     نمایش پیکربندی شبکه (ویندوز)\n  tracert      نمایش مسیر بسته‌ها تا مقصد\n  cd / dir     ناوبری و فهرست پوشه‌ها (CMD)\n  mkdir        ساخت پوشه\n  echo / cls   چاپ متن و پاک‌کردن صفحه\n  git          status / add / commit / push\n  ls / chmod   فهرست فایل‌ها و مجوزها (لینوکس)\n  systemctl    مدیریت سرویس‌های systemd (لینوکس)\n  show         سیسکو: ip interface brief / version\n  /ip          میکروتیک: address print / route print\n  Get-Process  فرآیندهای در حال اجرا (پاورشل)\n\nنکته: این ترمینال شبیه‌سازی‌شده است و خروجی‌ها از پیش تعریف‌شده‌اند."
-        }
-      ],
-      "defaultOutput": "دستورهای پشتیبانی‌شده (۱۶ دستور):\n\n  help         نمایش همین راهنما\n  ping         تست دسترسی به یک میزبان\n  ipconfig     نمایش پیکربندی شبکه (ویندوز)\n  tracert      نمایش مسیر بسته‌ها تا مقصد\n  cd / dir     ناوبری و فهرست پوشه‌ها (CMD)\n  mkdir        ساخت پوشه\n  echo / cls   چاپ متن و پاک‌کردن صفحه\n  git          status / add / commit / push\n  ls / chmod   فهرست فایل‌ها و مجوزها (لینوکس)\n  systemctl    مدیریت سرویس‌های systemd (لینوکس)\n  show         سیسکو: ip interface brief / version\n  /ip          میکروتیک: address print / route print\n  Get-Process  فرآیندهای در حال اجرا (پاورشل)"
-    },
     {
       "name": "ping",
       "usage": "ping <host>",
       "description": "تست دسترسی به یک میزبان با خروجی شبیه‌سازی‌شده",
+      "example": "ping google.com",
+      "paths": ["network-basics", "network-specialist", "network-manager", "ccna", "mikrotik"],
       "matches": [
         {
           "args": "google.com",
@@ -38,6 +29,8 @@
       "name": "ipconfig",
       "usage": "ipconfig [/all]",
       "description": "نمایش پیکربندی شبکه شبیه‌سازی‌شده",
+      "example": "ipconfig /all",
+      "paths": ["network-basics", "cmd-basics", "mcsa"],
       "matches": [
         {
           "args": "",
@@ -58,6 +51,8 @@
       "name": "tracert",
       "usage": "tracert <host>",
       "description": "نمایش مسیر شبیه‌سازی‌شده بسته‌ها تا مقصد",
+      "example": "tracert google.com",
+      "paths": ["network-basics", "cmd-basics", "network-specialist"],
       "matches": [
         {
           "args": "*",
@@ -70,6 +65,8 @@
       "name": "cd",
       "usage": "cd <path> | cd ..",
       "description": "جابه‌جایی شبیه‌سازی‌شده بین پوشه‌ها",
+      "example": "cd Projects",
+      "paths": ["cmd-basics", "git-basics", "mcsa", "powershell", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "..",
@@ -98,6 +95,8 @@
       "name": "dir",
       "usage": "dir",
       "description": "نمایش فهرست شبیه‌سازی‌شده فایل‌ها و پوشه‌ها",
+      "example": "dir",
+      "paths": ["cmd-basics", "mcsa"],
       "matches": [
         {
           "args": "",
@@ -114,6 +113,8 @@
       "name": "mkdir",
       "usage": "mkdir <name>",
       "description": "ساخت شبیه‌سازی‌شده پوشه",
+      "example": "mkdir Projects",
+      "paths": ["cmd-basics", "git-basics", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "*",
@@ -126,6 +127,8 @@
       "name": "echo",
       "usage": "echo <text>",
       "description": "چاپ متن وارد‌شده در ترمینال",
+      "example": "echo شب‌آموز",
+      "paths": ["cmd-basics", "git-basics", "powershell", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "*",
@@ -135,21 +138,11 @@
       "defaultOutput": "خطا: متنی برای چاپ وارد کنید.\nشیوه صحیح: echo <text>   مثل: echo سلام دنیا"
     },
     {
-      "name": "cls",
-      "usage": "cls",
-      "description": "پاک‌کردن صفحه ترمینال",
-      "matches": [
-        {
-          "args": "*",
-          "output": ""
-        }
-      ],
-      "defaultOutput": ""
-    },
-    {
       "name": "git",
       "usage": "git <status|add|commit|push>",
       "description": "دستورات گیت: status، add، commit و push با خروجی شبیه‌سازی‌شده",
+      "example": "git status",
+      "paths": ["git-basics", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "status",
@@ -194,6 +187,8 @@
       "name": "ls",
       "usage": "ls [-la]",
       "description": "نمایش فهرست شبیه‌سازی‌شده فایل‌ها و پوشه‌ها در لینوکس",
+      "example": "ls -la",
+      "paths": ["linux-lpic1", "linux-lpic2", "linux-lpic3", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "",
@@ -214,6 +209,8 @@
       "name": "chmod",
       "usage": "chmod <mode> <file>",
       "description": "اعمال شبیه‌سازی‌شده مجوزهای لینوکس با حالت عددی (755 و 644)",
+      "example": "chmod 755 deploy.sh",
+      "paths": ["linux-lpic1", "linux-lpic2", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "755 *",
@@ -234,6 +231,8 @@
       "name": "systemctl",
       "usage": "systemctl <status|start|restart|enable> <service>",
       "description": "مدیریت شبیه‌سازی‌شده سرویس‌های systemd لینوکس",
+      "example": "systemctl status nginx",
+      "paths": ["linux-lpic1", "linux-lpic2", "linux-lpic3", "devops-engineer", "devops-architect"],
       "matches": [
         {
           "args": "status nginx",
@@ -263,9 +262,51 @@
       "defaultOutput": "خطا: عملیات و نام سرویس را وارد کنید.\nشیوه صحیح: systemctl status nginx"
     },
     {
+      "name": "pwd",
+      "usage": "pwd",
+      "description": "نمایش مسیر جاری در لینوکس",
+      "example": "pwd",
+      "paths": ["linux-lpic1", "linux-lpic2", "linux-lpic3", "devops-engineer", "devops-architect"],
+      "matches": [
+        {
+          "args": "",
+          "output": "/home/ali"
+        },
+        {
+          "args": "*",
+          "output": "در این شبیه‌سازی pwd بدون پارامتر کار می‌کند."
+        }
+      ],
+      "defaultOutput": "/home/ali"
+    },
+    {
+      "name": "cat",
+      "usage": "cat <file>",
+      "description": "نمایش محتوای شبیه‌سازی‌شده فایل متنی",
+      "example": "cat notes.txt",
+      "paths": ["linux-lpic1", "linux-lpic2", "linux-lpic3", "devops-engineer", "devops-architect"],
+      "matches": [
+        {
+          "args": "notes.txt",
+          "output": "یادداشت‌های کاری:\n1. بکاپ روزانه از /etc گرفته شود.\n2. مجوز deploy.sh باید 755 بماند.\n3. گزارش هفتگی هر پنجشنبه ارسال شود."
+        },
+        {
+          "args": "readme.md",
+          "output": "# پروژه آزمایشی\nاین یک فایل نمونه برای تمرین دستور cat در شب‌آموز است."
+        },
+        {
+          "args": "*",
+          "output": "محتوای '{{arg}}' در این شبیه‌سازی موجود نیست؛ فایل‌های نمونه: notes.txt و readme.md"
+        }
+      ],
+      "defaultOutput": "خطا: نام فایل را وارد کنید.\nشیوه صحیح: cat notes.txt"
+    },
+    {
       "name": "show",
       "usage": "show <ip interface brief | version>",
       "description": "دستورات نمایشی سیسکو IOS: وضعیت اینترفیس‌ها و اطلاعات سیستم",
+      "example": "show ip interface brief",
+      "paths": ["ccna", "network-specialist", "network-manager"],
       "matches": [
         {
           "args": "ip interface brief",
@@ -286,6 +327,8 @@
       "name": "/ip",
       "usage": "/ip <address print | route print>",
       "description": "دستورات RouterOS میکروتیک: نمایش آدرس‌ها و جدول مسیریابی",
+      "example": "/ip address print",
+      "paths": ["mikrotik"],
       "matches": [
         {
           "args": "address print",
@@ -310,6 +353,8 @@
       "name": "Get-Process",
       "usage": "Get-Process",
       "description": "نمایش شبیه‌سازی‌شده فرآیندهای در حال اجرا با پاورشل",
+      "example": "Get-Process",
+      "paths": ["powershell", "mcsa"],
       "matches": [
         {
           "args": "",
