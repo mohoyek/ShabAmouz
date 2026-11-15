@@ -1,0 +1,106 @@
+---
+slug: automation-scale
+path: linux-lpic3
+title: "خودکارسازی و مقیاس در لینوکس"
+summary: "مدیریت پیکربندی با Ansible (inventory، playbook، module)، هویت سازمانی با FreeIPA، مانیتورینگ و اصول مقیاس‌پذیری"
+duration: 15
+order: 3
+---
+
+یک سرور را با دست مدیریت می‌کنند، ده سرور را با اسکریپت، صد سرور را با مدیریت پیکربندی. تخصص LPIC-3 در آزمون‌های 300 و 303 همین گذر است: از «لاگین و تایپ» به «کد زیرساخت و هویت متمرکز». این درس پایانی مسیر لینوکس، شما را به دنیای Ansible و FreeIPA و مانیتورینگ می‌برد — همان جایی که مسیر DevOps از لینوکس جدا می‌شود.
+
+## چرا پیکربندی دستی شکست می‌خورد؟
+
+سه بیماری کلاسیک زیرساخت دستی: **Config Drift** (سرورها با گذر زمان از هم فاصله می‌گیرند چون هر کدام جدا تغییر کرده‌اند)، **Snowflake Server** (سرور یگانه‌ای که هیچ‌کس نمی‌داند چطور دوباره ساخته می‌شود) و وابستگی به «آن یکی همکار که می‌داند». مدیریت پیکربندی (Configuration Management) هر سه را با یک نسخه ایده حل می‌کند: **وضعیت مطلوب در کد تعریف می‌شود و ابزار خودش سیستم را به آن وضعیت می‌رساند** (Idempotency — اجرای تکراری، نتیجه اضافه ندارد).
+
+## Ansible: ساده‌ترین ابزار قوی
+
+Ansible فقط SSH می‌خواهد؛ نه دیمن روی سرورها و نه سرور مرکزی. سه مفهوم دارد:
+
+**۱) Inventory** — فهرست میزبان‌ها:
+
+```ini
+# /etc/ansible/hosts
+[web]
+web01 ansible_host=192.168.1.11
+web02 ansible_host=192.168.1.12
+
+[db]
+db01 ansible_host=192.168.1.21
+
+[prod:children]
+web
+db
+```
+
+**۲) Playbook** — وضعیت مطلوب در YAML:
+
+```yaml
+- name: راه‌اندازی وب‌سرور استاندارد
+  hosts: web
+  become: true
+  tasks:
+    - name: نصب nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+    - name: کپی کانفیگ سایت
+      ansible.builtin.copy:
+        src: files/app.conf
+        dest: /etc/nginx/sites-available/app.conf
+      notify: reload nginx
+  handlers:
+    - name: reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+```
+
+**۳) Module** — واحد کار؛ هر task یک ماژول را صدا می‌زند (apt، copy، service، user، lineinfile و…).
+
+```bash
+ansible all -m ping                        # تست اتصال به همه میزبان‌ها
+ansible web -m setup | head -20            # facts هر میزبان
+ansible-playbook site.yml --check          # اجرای خشک (dry run)
+ansible-playbook site.yml --limit db01     # فقط روی یک میزبان
+```
+
+- **idempotent بودن:** اجرای دوباره playbook تغییری نمی‌دهد اگر وضعیت درست باشد؛ خروجی هر task رنگ دارد: سبک = ok، زرد = changed.
+- **Facts:** متغیرهای خودکار هر میزبان (`ansible_os_family` و…) برای شرط‌گذاری بین دبیان و RHEL — سؤال پرتکرار آزمون.
+- **Vault:** رمزها را با `ansible-vault encrypt secrets.yml` رمزنگاری کنید؛ متن رمز هرگز در git نمی‌نشیند.
+
+## هویت متمرکز با FreeIPA
+
+وقتی سرورها به ده‌ها می‌رسند، ساخت کاربر جداگانه روی هر سرور فاجعه است. **FreeIPA** پکیج هویت سازمانی لینوکس است: LDAP (پایگاه هویت) + Kerberos (احراز هویت) + DNS + سیاست‌ها، همه با رابط یک. سرور IPA نصب می‌کنید و هر سرور لینوکسی با `ipa-client-install` عضو دامنه می‌شود؛ از آن پس:
+
+```bash
+kinit reza                 # ورود واحد
+ipa user-add sara --first=Sara --last=Karimi
+ipa hostgroup-add-member webservers --hosts=web01
+sudo ipa-client-install --domain=example.org --realm=EXAMPLE.ORG
+```
+
+یک بار کاربر می‌سازید، همه سرورهای عضو همان را می‌شناسند؛ خروج از سازمان هم یک دستور است نه پاک‌کردن ده حساب. سؤال آزمون: نقش‌های LDAP و Kerberos و DNS در FreeIPA را کنار هم بدانید.
+
+## مانیتورینگ و مقیاس
+
+مدیریت صد سرور بدون نگاه متمرکز ممکن نیست. دو غول متن‌باز که باید بشناسید:
+
+- **Prometheus:** متریک‌ها را با مدل pull از exporters (node_exporter روی هر سرور) جمع می‌کند و زبان کوئری PromQL دارد.
+- **Grafana:** داشبورد همین متریک‌ها؛ و Alertmanager برای هشدار.
+
+سه اصل مقیاس که آزمون 300 و مصاحبه هر دو می‌خواهند:
+
+1. **بی‌حالتی (Stateless) در لایه جلو:** وب‌سرورها state نداشته باشند (session در Redis/DB) تا پشت Load Balancer آزادانه scale شوند.
+2. **زیرساخت یکسان و قابل بازسازی:** هر سرور با playbook ساخته شود؛ هیچ سرور دست‌سازِ یگانه نباشد.
+3. **همه‌چیز قابل پایش:** متریک قبل از بحران، لاگ متمرکز برای بعد از بحران.
+
+## جمع‌بندی
+
+- بیماری‌های زیرساخت دستی: config drift، snowflake server و دانش در ذهن آدم‌ها؛ درمان: وضعیت مطلوب در کد.
+- Ansible با inventory + playbook + module و بدون دیمن کار می‌کند؛ idempotency شرط سلامت playbook است.
+- رمزها با ansible-vault محافظت می‌شوند و `--check` اجرای بی‌خطر آزمایشی است.
+- FreeIPA = LDAP + Kerberos + DNS + سیاست‌ها؛ هویت متمرکز یعنی یک بار ساخت کاربر، شناخته‌شدن در همه سرورها.
+- Prometheus متریک جمع می‌کند و Grafana نمایش می‌دهد؛ بدون مانیتورینگ، مقیاس یعنی کوری در تاریکی.
+
+برای تمرین: سه ماشین مجازی بالا بیاورید، روی یکی Ansible نصب کنید و با playbook یک‌باره nginx و کاربر deploy و cron بکاپ را روی دو میزبان دیگر ببرید. سپس سرور سوم را حذف و با همان playbook از صفر بسازید — این دقیقاً حس «زیرساخت به‌مثابه کد» است.

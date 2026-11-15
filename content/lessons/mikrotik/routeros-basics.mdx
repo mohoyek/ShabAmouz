@@ -1,0 +1,96 @@
+---
+slug: routeros-basics
+path: mikrotik
+title: "شروع با RouterOS و Winbox"
+summary: "سخت‌افزار میکروتیک و RouterOS، اتصال با Winbox و MAC-Winbox، پیکربندی IP و DHCP و پیش‌فرض مسیر و پشتیبان‌گیری"
+duration: 14
+order: 1
+---
+
+میکروتیک، انتخاب محبوب اپراتورها و ISPهای کوچک است: سخت‌افزار ارزان با سیستم‌عامل کامل **RouterOS** که تقریباً همه‌چیز دارد — مسیریابی، فایروال، وایرلس، VPN و حتی API. آزمون **MTCNA** (MikroTik Certified Network Associate) اولین مدرک رسمی این اکوسیستم است. این درس، از بسته‌بندی رخ باز‌کردن روتر تا «اینترنت که کار می‌کند» را می‌پیماید.
+
+## سخت‌افزار و RouterOS
+
+میکروتیک روی روترهای خانگی/شرکتی (hEX، hAP)، روترهای کانتینری و حتی سخت‌افزار ARM/CHR (Cloud Hosted Router — روتر نرم‌افزاری روی مجازی‌ساز) نصب می‌شود. سه مفهوم پایه:
+
+- **RouterOS:** سیستم‌عامل مبتنی بر لینوکس با CLI مخصوص (RouterOS Script) و GUI به نام Winbox.
+- **CHR:** نسخه نرم‌افزاری RouterOS برای اجرا روی VMware/VirtualBox — بهترین ابزار تمرین MTCNA بدون خرید سخت‌افزار.
+- **سطوح لایسنس:** CHR از Level 1 (رایگان، 1Mbps) تا p-unlimited؛ فقط برای محدودیت پهنای باند و اینترفیس‌هاست، نه امکانات فایروال.
+
+## اتصال اول: Winbox
+
+**Winbox** ابزار مدیریتی ویندوزیِ رسمی است (نسخه ویندوز برای مک/لینوکس هم با wine یا نسخه وب WebFig). دو روش اتصال:
+
+- **با IP:** اگر روتر IP دارد (پیش‌فرض 192.168.88.1 روی lan و DHCP client روی wan).
+- **با MAC:** اتصال مستقیم لایه ۲ به مک‌آدرس اینترفیس — حتی وقتی IP خراب شده، نجات‌دهنده است (سؤال آزمون: «تنها راه دسترسی وقتی IP پیکربندی خراب است؟» پاسخ: MAC-Winbox از Neighbors).
+
+اولین تمرین امنیتی که همه می‌کنند: در Winbox، منوی **System > Users** رمز ادمین را عوض کنید؛ اکانت admin بدون رمز خطر مرگبار است.
+
+```routeros
+/user set admin password="Str0ng#Pass"
+/system resource print          # CPU، RAM، نسخه RouterOS
+/interface print                # فهرست اینترفیس‌ها
+```
+
+**Safe Mode** (Ctrl+X یا دکمه در Winbox) قابلیت نجات‌بخش است: هر پیکربندی‌ای که در حالت safe انجام شود، اگر اتصال قطع شود به‌طور خودکار برگردانده می‌شود. قبل از هر آزمایش پرخطر روی روتر دور از دسترس، safe mode را بزنید — این مورد در MTCNA حتماً سؤال دارد.
+
+## IP، DHCP و مسیر پیش‌فرض
+
+سناریوی کلاسیک: ether1 به مودم/ISP (WAN)، ether2 به شبکه داخلی (LAN):
+
+```routeros
+# WAN: کلاینت DHCP از مودم
+/ip dhcp-client add interface=ether1 disabled=no
+
+# LAN: IP استاتیک برای خود روتر
+/ip address add address=192.168.10.1/24 interface=ether2
+
+# DHCP Server برای شبکه داخلی
+/ip pool add name=pool-lan ranges=192.168.10.100-192.168.10.200
+/ip dhcp-server add interface=ether2 address-pool=pool-lan disabled=no
+/ip dhcp-server network add address=192.168.10.0/24 gateway=192.168.10.1 dns-server=192.168.10.1
+```
+
+سه دستور عیب‌یابی که در MTCNA حفظ‌شدنی‌اند:
+
+```routeros
+/ping 8.8.8.8                    # اتصال L3 بیرون
+/print /ip route                 # مسیر 0.0.0.0/0 با gateway موجود است؟
+/print /ip arp                   # مک همسایه‌ها دیده می‌شود؟
+```
+
+اگر ping به IP جواب می‌دهد ولی ping به دامنه نه، مشکل DNS است: `/ip dns set servers=8.8.8.8,1.1.1.1 allow-remote-requests=yes`.
+
+## قواعد نگارش RouterOS و نجات از خطا
+
+دستورات RouterOS درختی‌اند و Tab Completion دارند:
+
+```routeros
+/ip firewall filter print        # مسیر کامل
+/ip fir fil pr                   # اختصارات — RouterOS تا حد یکتا بودن کوتاه می‌کند!
+add chain=input ...              # داخل کانتکست فعلی
+```
+
+دو ابزار بازیابی که آزمون عاشق‌شان است:
+
+```routeros
+/system backup save name=pre-config     # باینری کامل (فقط RouterOS به RouterOS)
+/system backup load name=pre-config
+/export file=config-rsc                 # متنی — قابل مطالعه و بازگردانی جزئی
+/import file-name=config-rsc
+```
+
+تفاوت مهم (سؤال پرتکرار): backup باینری همه‌چیز از جمله رمزها را نگه می‌دارد ولی فقط روی همان نسخه/تجهیز قابل بازگردانی است؛ export متنی است، انتقال‌پذیر و قابل مطالعه، ولی رمزها را (بدون sensitive flag) نمی‌آورد. عادت حرفه‌ای: قبل از هر تغییر، هم backup هم export بگیرید.
+
+- **Reset با دکمه:** دکمه ریست سخت‌افزاری سه رفتار دارد: نگه‌داشتن تا ۵ ثانیه (beep — فقط پیکربندی)، تا ۵+ ثانیه (Caps mode) و روش CAPsMAN؛ و برای بازگشت کامل RouterOS از Netinstall استفاده می‌شود.
+- **WebFig:** مرورگر روی http://IP روتر — همان امکانات Winbox با رابط وب؛ در محیط‌های بدون ویندوز مفید است.
+
+## جمع‌بندی
+
+- RouterOS سیستم‌عامل کامل روتر است؛ CHR برای تمرین بدون سخت‌افزار و سطوح لایسنس فقط منابع را سقف می‌زنند.
+- Winbox با IP یا MAC وصل می‌شود؛ MAC-Winbox تنها نجات وقتی IP خراب است.
+- اولین کارها: تعویض رمز admin، Safe Mode قبل از تغییر پرخطر و عادت backup + export.
+- زنجیره اینترنت: DHCP client روی WAN، IP استاتیک روی LAN، pool و dhcp-server و مسیر پیش‌فرض؛ بعدش DNS.
+- اختصار RouterOS تا حد یکتایی مجاز است و ساختار دستورات درختی/کانتکستی است.
+
+برای تمرین: یک CHR رایگان در VirtualBox بالا بیاورید، با Winbox وصل شوید، سناریوی WAN/LAN این درس را کامل ببندید و بعد عمداً یک قاعده غلط در فایروال بگذارید تا با Safe Mode نجاتش دهید — همان شب اول هر شبکه‌ساز میکروتیکی!

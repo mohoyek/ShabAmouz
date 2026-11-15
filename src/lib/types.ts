@@ -14,10 +14,30 @@ export type PathId =
   | "network-specialist"
   | "network-manager"
   | "devops-engineer"
-  | "devops-architect";
+  | "devops-architect"
+  | "linux-lpic1"
+  | "linux-lpic2"
+  | "linux-lpic3"
+  | "mcsa"
+  | "mikrotik"
+  | "ccna"
+  | "powershell";
 
 /** کلید رنگ مسیر — نگاشت به کلاس‌های Tailwind در lib/path-styles.ts انجام می‌شود */
-export type ColorKey = "teal" | "amber" | "violet" | "cyan" | "rose" | "sky" | "indigo";
+export type ColorKey =
+  | "teal"
+  | "amber"
+  | "violet"
+  | "cyan"
+  | "rose"
+  | "sky"
+  | "indigo"
+  | "green"
+  | "emerald"
+  | "lime"
+  | "blue"
+  | "orange"
+  | "purple";
 
 /** متادیتای یک مسیر یادگیری — منبع: content/paths.json */
 export interface LearningPath {

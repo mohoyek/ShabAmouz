@@ -1,0 +1,91 @@
+---
+slug: virtualization-containers
+path: linux-lpic3
+title: "مجازی‌سازی و کانتینر در لینوکس"
+summary: "KVM و libvirt، شبکه و snapshot ماشین مجازی، LXC وPodman و فناوری زیرین namespace و cgroup"
+duration: 15
+order: 2
+---
+
+لینوکس مدرن زیرساخت ابر و DevOps است و هر دو روی دو فناوری این درس سوارند: مجازی‌سازی کامل و کانتینر. تخصص LPIC-3 (300) هر دو را می‌سنجد؛ بازار کار هم. اگر درس‌های Docker و Kubernetes مسیر DevOps را دیده‌اید، اینجا زیرِ همان‌ها را باز می‌کنیم: ببینید KVM چطور کار می‌کند و namespace و cgroup دقیقاً چه می‌کنند.
+
+## KVM و libvirt: مجازی‌سازی کامل
+
+**KVM** ماژول مجازی‌سازی هسته لینوکس است که CPU را به چند vCPU تقسیم می‌کند (نیازمند پشتیبانی VT-x/AMD-V در پردازنده — با `egrep -c '(vmx|svm)' /proc/cpuinfo` چک کنید). **libvirt** لایه مدیریتی روی آن است و ابزارهای `virsh` و `virt-manager` از طریق آن کار می‌کنند. **QEMU** محیط کاربری این چرخه است.
+
+```bash
+sudo apt install qemu-kvm libvirt-daemon-system virtinst
+sudo virsh list --all                    # همه ماشین‌ها
+sudo virt-install --name web01 --memory 2048 --vcpus 2 \
+  --disk size=20 --cdrom ubuntu-24.04.iso --os-variant ubuntu24.04
+
+# مدیریت روزمره با virsh
+sudo virsh start web01 / shutdown web01 / reboot web01
+sudo virsh autostart web01               # اجرای خودکار هنگام بوت
+sudo virsh dominfo web01                 # مشخصات ماشین
+```
+
+- **ذاکره حبابدار (Ballooning):** KVM می‌تواند RAM بیکار ماشین مجازی را پس بگیرد (device balloon) — مفهومی که آزمون درباره آن سؤال دارد.
+- **تصاویر:** فرمت استاندارد **qcow2** است (کپی هنگام نوشتن، snapshot و فشرده‌سازی) در برابر raw ساده‌تر ولی بدون این امکانات.
+- **snapshot:** `virsh snapshot-create-as web01 pre-update` — قبل از هر تغییر پرخطر بگیرید و با `snapshot-revert` برگردید.
+
+شبکه ماشین‌های مجازی معمولاً با **bridge** است: یک سوئیچ نرم‌افزاری (`virbr0` برای NAT پیش‌فرض) که ماشین‌ها مثل کابل‌شده به LAN واقعی IP می‌گیرند. سؤال کلاسیک: تفاوت شبکه NAT (ماشین پشت IP میزبان) و Bridged (ماشین عضو مستقیم شبکه).
+
+## زیر کاپوت: namespace و cgroup
+
+وقتی می‌گوییم «کانتینر»، در واقع دو قابلیت هسته در کارند:
+
+1. **Namespace:** مرز دید. هر namespace برای یک بعد (PID، NET، MNT، UTS، IPC، USER) یک جهان جدا می‌سازد؛ فرآیند داخل آن فکر می‌کند تنها فرآیند سیستم است و کارت شبکه خودش را دارد.
+2. **cgroup (control groups):** بودجه منابع. CPU، RAM و I/O هر گروه را سقف‌گذاری و حساب می‌کند؛ همان چیزی که `docker run --memory=512m` پشت صحنه تنظیم می‌کند.
+
+```bash
+# دیدن namespaceهای یک فرآیند
+ls /proc/<PID>/ns/
+# اجرای یک فرآیند در namespace تازه (دستگاه کانتینر دست‌ساز!)
+sudo unshare --pid --fork --mount-proc bash
+# عضویت در namespace یک کانتینر در حال اجرا
+nsenter --target <PID> --net --pid bash
+```
+
+پس کانتینر «ماشین مجازی سبک» نیست: بدون کرنل جدا، فقط فرآیندی ایزوله در همان هسته. به همین دلیل استارت یک کانتینر میلی‌ثانیه‌ای است و سربارش ناچیز.
+
+## LXC و Podman
+
+**LXC** کانتینر سیستم‌محور است — تقریباً یک ماشین سبک با init واقعی، SSH و چند سرویس؛ مناسب «سرورهای کوچک متعدد روی یک میزبان». ابزار جدیدترش **LXD** است.
+
+```bash
+sudo lxc launch ubuntu:24.04 web01       # LXD
+lxc exec web01 -- bash                    # ورود به کانتینر
+lxc list                                  # فهرست کانتینرها
+```
+
+**Podman** جایگزین بدون‌دامن (daemonless) Docker است و همین‌طور Docker سازگار: همان CLI، بدون نیاز به سرویس مرکزی و با قابلیت اجرای **rootless** (کانتینر با کاربر عادی — مزیت امنیتی مهم و سؤال آزمون):
+
+```bash
+podman run -d --name web -p 8080:80 nginx:alpine
+podman ps / podman images / podman logs web
+podman build -t myapp:1.0 .               # همان Dockerfile
+podman generate systemd --new --name web  # تبدیل کانتینر به سرویس systemd
+```
+
+جدول تصمیم (سؤال محبوب آزمون و مصاحبه):
+
+| نیاز | راه‌حل |
+|---|---|
+| هسته و سیستم‌عامل جدا، چند OS روی یک میزبان | KVM/libvirt (VM) |
+| ایزوله کامل امنیتی بین مشتریان | VM |
+| استقرار سریع و مقیاس‌پذیر اپلیکیشن | کانتینر (Podman/Docker/LXC) |
+| شبیه سرور کامل با init و SSH | LXC/LXD |
+
+- **rootless containers:** کانتینر بدون root میزبان؛ اگر کانتینر به خطر بیفتد، مهاجم فقط با مجوز یک کاربر عادی است. Podman این را پیش‌فرض دارد.
+- **qcow2 و thin provisioning:** تصویر qcow2 فقط به‌اندازه مصرف‌شده جا می‌گیرد و clone سریع می‌دهد؛ پایه ابرهای خصوصی است.
+
+## جمع‌بندی
+
+- KVM مجازی‌سازی هسته و libvirt/virsh لایه مدیریتی آن است؛ تصویر استاندارد qcow2 و شبکه‌ها NAT یا bridge.
+- Snapshot قبل از تغییر پرخطر بگیرید؛ ballooning RAM بیکار را پس می‌گیرد.
+- کانتینر = namespace (ایزوله دید) + cgroup (سقف منابع) روی همان هسته؛ نه سیستم‌عامل جدا.
+- LXC برای «سرور سبک» و Podman/Docker برای اپلیکیشن؛ Podman بدون دیمن و rootless است.
+- انتخاب درست: ایزوله امنیتی کامل = VM؛ چابکی و مقیاس اپ = کانتینر.
+
+برای تمرین: روی میزبان لینوکس هم یک VM با virt-install بالا بیاورید و هم یک کانتینر با podman run؛ بعد `ls /proc/1/ns` را در هر دو مقایسه کنید تا تفاوت ایزوله را عیناً ببینید. بعداً در مسیر DevOps همین مفهوم زیر Kubernetes رد و بدل می‌شود.

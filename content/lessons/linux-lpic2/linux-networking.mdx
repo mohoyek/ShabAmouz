@@ -1,0 +1,106 @@
+---
+slug: linux-networking
+path: linux-lpic2
+title: "شبکه و سرویس‌های لینوکس"
+summary: "پیکربندی IP با ip و NetworkManager، عیب‌یابی با ss و dig، SSH و کلیدها و انتقال فایل با rsync"
+duration: 15
+order: 2
+---
+
+سرور بدون شبکه فقط یک کیس بی‌صدا است. آزمون LPIC-2 انتظار دارد هم پیکربندی شبکه را بلد باشید هم بتوانید وقتی «سرور از دسترس خارج شد»، قدم‌به‌قدم عیب‌یابی کنید. این درس ابزارهای مدرن (ip، ss، nmcli) و اتصال امن با SSH را پوشش می‌دهد — همان مهارتی که در مسیر DevOps پایه گذاشتید و اینجا حرفه‌ای می‌شود.
+
+## پیکربندی IP: ابزار مدرن `ip`
+
+دستور قدیمی `ifconfig` منسوخ شده؛ ابزار استاندارد امروز بسته **iproute2** است:
+
+```bash
+ip addr show                    # همه اینترفیس‌ها و IPها (خلاصه: ip a)
+ip -4 addr show dev ens33       # فقط IPv4 یک اینترفیس
+sudo ip addr add 192.168.1.50/24 dev ens33    # IP موقت (بعد از ری‌بوت می‌رود)
+ip link set ens33 up            # بالا آوردن اینترفیس
+ip route show                   # جدول مسیریابی و Default Gateway
+sudo ip route add default via 192.168.1.1
+```
+
+پیکربندی دائمی بین دو خانواده توزیع فرق دارد:
+
+- **RHEL/Rocky:** `nmcli` (رابط خط‌فرمانی NetworkManager) — استاندارد آزمون.
+- **Debian/Ubuntu Server:** فایل netplan در `/etc/netplan/` یا در قدیم `/etc/network/interfaces`.
+
+```bash
+nmcli device status                              # وضعیت دستگاه‌ها
+nmcli con show                                   # پروفایل‌های اتصال
+sudo nmcli con mod ens33 ipv4.addresses 192.168.1.50/24
+sudo nmcli con mod ens33 ipv4.gateway 192.168.1.1
+sudo nmcli con mod ens33 ipv4.dns "8.8.8.8 1.1.1.1"
+sudo nmcli con mod ens33 ipv4.method manual
+sudo nmcli con up ens33                          # اعمال فوری
+```
+
+نام‌های اینترفیس هم منطق جدید دارند: `ens33` (PCI)، `enp0s3` (آدرس اسلات) و `wlp2s0` (وایرلس) — قاعده Predictable Network Interface Names.
+
+## عیب‌یابی: زنجیره استاندارد
+
+وقتی «اینترنت قطع است»، این زنجیره را به‌ترتیب اجرا کنید:
+
+```bash
+ping 127.0.0.1        # ۱) TCP/IP سالم است؟
+ip link               # ۲) اینترفیس UP و کابل وصل؟ (state UP)
+ip route              # ۳) Default Gateway ثبت شده؟
+ping 192.168.1.1      # ۴) گیت‌وی جواب می‌دهد؟
+ping 8.8.8.8          # ۵) بیرون شبکه کار می‌کند؟
+dig www.example.com   # ۶) DNS جواب می‌دهد؟
+```
+
+اگر مرحله ۵ جواب می‌دهد ولی ۶ نه، مشکل شما DNS است، نه شبکه. ابزارهای پورت و اتصال:
+
+```bash
+ss -tulpn             # همه پورت‌های باز و سرویس‌ها (جای netstat مدرن)
+ss -tn state established   # اتصال‌های زنده
+traceroute 8.8.8.8    # مسیر بسته‌ها تا مقصد (در RHEL: tracepath)
+dig +short www.example.com   # جواب سریع DNS
+dig -x 8.8.8.8        # جستجوی معکوس (PTR)
+host example.com      # ساده‌ترین ابزار DNS
+```
+
+سؤال آزمون: `ss -tulpn` را حفظ باشید — تفاوت `-t` (TCP)، `-u` (UDP)، `-l` (listener)، `-p` (فرآیند) و `-n` (عدد، بدون resolve) را می‌خواهد.
+
+## SSH و انتقال فایل
+
+SSH پشت در بیشتر سرورهای جهان است و تسلط بر آن، مرز میان ادمین آماتور و حرفه‌ای است.
+
+```bash
+ssh reza@192.168.1.10                 # ورود با رمز
+ssh -p 2222 reza@server.example.com   # ورود با پورت دلخواه
+
+# کلید احراز هویت — استاندارد واقعی
+ssh-keygen -t ed25519                 # جفت کلید در ~/.ssh
+ssh-copy-id reza@192.168.1.10         # کلید عمومی را روی سرور بگذار
+ssh reza@192.168.1.10                 # حالا بدون رمز وارد می‌شوید
+```
+
+کلیید احراز هویت نه‌فقط راحت‌تر است بلکه پورت‌اسکنرهای brute-force را هم عملاً بی‌اثر می‌کند. تنظیمات مهم سرور در `/etc/ssh/sshd_config`: `PermitRootLogin no` و `PasswordAuthentication no` (بعد از تست کلید!) و تغییر `Port` — هر سه توصیه استاندارد امنیتی و سؤال آزمون.
+
+**انتقال فایل:**
+
+```bash
+scp file.tar.gz reza@server:/tmp/          # کپی امن ساده
+scp -r project/ reza@server:~/apps/        # کپی پوشه
+rsync -avz --delete data/ backup@srv:/backup/   # همگام‌سازی هوشمند
+rsync -av --dry-run data/ backup@srv:/backup/   # اول بدون اجرا تست کن!
+```
+
+تفاوت scp و rsync سؤال پرتکرار است: rsync فقط تفاوت‌ها را منتقل می‌کند، حذف‌ها را هم همگام می‌کند (`--delete`، با احتیاط!) و برای بکاپ دوره‌ای ابزار استاندارد است.
+
+- **SSH tunnel:** انتقال پورت با `-L` (local forwarding: `ssh -L 8080:db:5432 user@srv` دیتابیس داخلی را روی لوکال شما می‌آورد) و `-R` (remote forwarding). در آزمون 202 حداقل باید `-L` را بشناسید.
+- **hostname:** نام سیستم با `hostnamectl set-hostname srv01` تغییر می‌کند و نگاشت سریع نام‌ها در `/etc/hosts` (بررسی ترتیب حل‌نام با `/etc/nsswitch.conf`).
+
+## جمع‌بندی
+
+- ابزار مدرن شبکه `ip` است (addr، link، route) و پیکربندی دائمی با nmcli در خانواده RHEL و netplan در Ubuntu.
+- عیب‌یابی همیشه با زنجیره ping لوکال ← ip link ← گیت‌وی ← IP خارجی ← DNS انجام می‌شود؛ بعدش سراغ ss و traceroute بروید.
+- `ss -tulpn` جایگزین netstat است و پورت‌های باز با سرویس‌شان را نشان می‌دهد.
+- احراز هویت با کلید ed25519 و ssh-copy-id استاندارد امنیتی است؛ در سرور root را ممنوع و رمز را غیرفعال کنید.
+- rsync برای همگام‌سازی و بکاپ از scp بهتر است؛ همیشه اول `--dry-run`.
+
+برای تمرین: یک ماشین دوم مجازی اضافه کنید، بین دو سرور SSH با کلید برقرار کنید، رمز ورود را غیرفعال کنید و یک rsync دوره‌ای (cron، درس بعد!) بسازید. این دقیقاً آزمایشگاهی است که در مصاحبه‌ها از آن سؤال می‌شود.

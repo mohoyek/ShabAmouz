@@ -1,0 +1,83 @@
+---
+slug: winserver-install
+path: mcsa
+title: "نصب و مدیریت Windows Server"
+summary: "انتخاب نسخه و روش نصب، Desktop Experience در برابر Core، Server Manager و sconfig و مدیریت Roles و Features"
+duration: 14
+order: 1
+---
+
+مسیر MCSA، کلاسیک‌ترین مسیر ادمینی ویندوز است: با Windows Server کار کنید، اکتیو دایرکتوری را بالا بیاورید و سرویس‌های شبکه سازمان را تحویل دهید. مدرک MCSA از سال ۲۰۲۱ بازنشسته شده و جانشینش آزمون‌های AZ-800/AZ-901 «Windows Server Hybrid Administrator» است، اما دانش آن هنوز ستون فقرات ادمین‌های ویندوز در بازار کار ایران و جهان است. این درس، انتخاب نسخه و نصب و مدیریت اولیه را پوشش می‌دهد.
+
+## کدام نسخه؟ کدام رابط؟
+
+دو محور تصمیم دارید:
+
+**نسخه (Edition):**
+- **Standard:** انتخاب همیشگی سازمان‌ها؛ دو ماشین مجازی مجاز با مجوز استاندارد.
+- **Datacenter:** برای مجازی‌سازی سنگین؛ مجوز نامحدود VM و امکانات پیشرفته مثل Storage Spaces Direct و Shielded VMs.
+- تفاوت Standard و Datacenter فقط **مجوز و امکانات مجازی‌سازی** است، نه ویژگی‌های پایه (سؤال کلاسیک آزمون).
+
+**رابط نصب:**
+- **Desktop Experience:** با GUI کامل؛ شروع راحت، مصرف منابع بیشتر.
+- **Server Core:** بدون دسکتاپ؛ فقط خط فرمان (cmd و PowerShell) و ابزارهای ریموت. سطح حمله کوچک‌تر، وصله کمتر، فضا کمتر — توصیه مایکروسافت برای سرورهای تولید. تبدیل یک‌طرفه: از Core می‌توانید به Desktop بروید، برعکس نه!
+
+حداقل‌های سخت‌افزاری رسمی: پردازنده ۱.۴ گیگاهرتز ۶۴بیتی، RAM ۵۱۲ مگابایت (برای Desktop Experience عملاً ۲ گیگ به بالا) و دیسک ۳۲ گیگابایت.
+
+## نصب و اولین راه‌اندازی
+
+نصب از USB بوت (Rufus) یا ISO روی VM انجام می‌شود. بعد از نصب اولین کارها به ترتیب:
+
+```powershell
+# تعیین نام سیستم و IP استاتیک (سرور همیشه IP ثابت می‌خواهد)
+Rename-Computer -NewName SRV01 -Restart
+New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.1.10 `
+  -PrefixLength 24 -DefaultGateway 192.168.1.1
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses 127.0.0.1, 8.8.8.8
+```
+
+**چرا IP ثابت؟** چون سرور قرار است DNS، DHCP و Domain Controller شود و این سرویس‌ها باید با آدرس پایدار شناخته شوند (سؤال پرتکرار آزمون و اصل واقعی دیتاسنتر).
+
+در Server Core اولین پنل مدیریت **sconfig** است: منوی متنی تنظیم شبکه، نام سیستم، عضویت دامنه و Remote Desktop:
+
+```cmd
+sconfig      :: منوی متنی ۱ تا ۱۵ در Server Core
+```
+
+## Server Manager و Roles و Features
+
+در Desktop Experience، دروازه مدیریت **Server Manager** است؛ دو مفهوم اصلی:
+
+- **Roles (نقش):** کاربردهای بزرگ سرور — Active Directory Domain Services، DHCP Server، DNS Server، Web Server (IIS)، File Server و…
+- **Features (ویژگی):** اجزای مکمل — .NET Framework، Failover Clustering، Telnet Client و…
+
+معادل خط فرمانی (که در Core تنها راه است):
+
+```powershell
+Get-WindowsFeature | Where-Object Installed        # فهرست نصب‌شده‌ها
+Install-WindowsFeature Web-Server -IncludeManagementTools
+Install-WindowsFeature AD-Domain-Services          # پیش‌نیاز درس بعد!
+Uninstall-WindowsFeature Telnet-Client
+```
+
+**مدیریت ریموت:** قاعده طلایی «سرور را ببندید و از بیرون اداره کنید» — Remote Server Administration Tools (RSAT) روی کارساز ادمین نصب می‌شود و Server Manager گروهی چند سرور را جمع می‌کند. جایگزین مدرن، **Windows Admin Center** است: کنسول مرورگری برای همه سرورها و کلاسترها.
+
+```powershell
+# روی سرور: مجاز کردن ریموت پاورشل
+Enable-PSRemoting -Force
+# روی کارساز ادمین:
+Enter-PSSession -ComputerName SRV01 -Credential (Get-Credential)
+```
+
+- **توکن‌ها:** بعد از نصب هر Role، Restart گاهی لازم است؛ `Get-WindowsFeature` بعد از نصب وضعیت را نشان می‌دهد.
+- **نمایش منابع:** `Get-ComputerInfo`، `Get-Service` و Task Manager برای چک اولیه.
+
+## جمع‌بندی
+
+- دو محور انتخاب: Standard در برابر Datacenter (مجوز و مجازی‌سازی) و Desktop Experience در برابر Server Core (رابط و امنیت).
+- تبدیل Core به Desktop ممکن است، برعکس نه؛ Core سطح حمله کمتری دارد و توصیه تولید است.
+- اولین کارهای پس از نصب: نام سیستم، IP استاتیک و sconfig در حالت Core.
+- Roles کاربردهای بزرگ‌اند و Features اجزای مکمل؛ مدیریت با Server Manager و معادل آن `Install-WindowsFeature`.
+- ادمین حرفه‌ای از RSAT یا Windows Admin Center و پاورشل ریموت مدیریت می‌کند، نه با لمس کنسول سرور.
+
+برای تمرین: دو VM ویندوز سرور نصب کنید — یکی Desktop Experience و یکی Core. IP استاتیک بدهید، با RSAT از اولی دومی را وارد Server Manager کنید و با `Enter-PSSession` ترمینال ریموت بگیرید. این آزمایشگاه، پایه درس اکتیو دایرکتوری است.

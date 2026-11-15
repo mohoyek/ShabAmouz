@@ -1,0 +1,99 @@
+---
+slug: ccna-security-automation
+path: ccna
+title: "ACL، NAT و اتوماسیون"
+summary: "ACL استاندارد و extended و مکان‌گذاری، انواع NAT و PAT، سرویس‌های جانبی NTP و DHCP و پایه امنیت و اتوماسیون 200-301"
+duration: 15
+order: 3
+---
+
+آزمون 200-301 با دو موضوع بزرگ «قدیمی‌های حیاتی» و «جدیدهای الزامی» بسته می‌شود: امنیت دستی با ACL و NAT و سرویس‌های جانبی، و پایه‌های اتوماسیون و برنامه‌پذیری شبکه. این درس هر دو را با جزئیات آزمونی پوشش می‌دهد.
+
+## ACL: قانون‌گذاری روی پکت
+
+**Access Control List** فهرست قواعد if-then روی ترافیک است. سه قانون بنیادین (سؤال حتماً):
+
+1. پکت از بالا به پایین بررسی و در **اولین تطابق** تصمیم می‌گیرد و دیگر پایین نمی‌رود.
+2. هر ACL یک **implicit deny** پنهان در انتها دارد: هرچه صریحاً accept نشده، drop است.
+3. ACL بدون هیچ قاعده = deny all!
+
+**دو نوع اصلی:**
+
+- **Standard (1-99):** فقط **Source IP** را می‌بیند.
+- **Extended (100-199):** Source و Destination، پروتکل و پورت — دقیق‌تر و پیش‌فرض انتخاب حرفه‌ای.
+
+```cisco
+! Extended: وب داخلی فقط برای دفتر، بقیه WAN بسته
+R1(config)# ip access-list extended WEB-IN
+R1(config-ext-nacl)# permit tcp 203.0.113.0 0.0.0.255 host 192.168.1.20 eq 443
+R1(config-ext-nacl)# permit tcp any host 192.168.1.20 eq 80
+R1(config-ext-nacl)# deny   ip any any log
+R1(config)# interface GigabitEthernet0/1
+R1(config-if)# ip access-group WEB-IN in
+```
+
+**قاعده مکان‌گذاری که آزمون عاشقش است:** ACL استاندارد را **نزدیک مقصد** ببندید (چون فقط منبع را می‌بیند و زودبستن، ترافیک سالم را هم می‌کُشد) و ACL extended را **نزدیک منبع** (چون دقیق است و بی‌خودی ترافیک را زود بیرون می‌اندازد). سمت اعمال هم in/out نسبت به روتر.
+
+- در ACL اسمی، ماسک **wildcard** است نه ساب‌نت؛ `any` = any any و `host x` = x.x.x.x 0.0.0.0.
+- `ip access-group` روی اینترفیس و `access-class` برای ACL روی VTY (لاگین‌ها) — تفکیک سؤال‌ساز.
+
+## NAT: سه شکل و یک PAT
+
+| نوع | کاربرد | قاعده |
+|---|---|---|
+| Static NAT | 1:1 — سرور داخلی با IP عمومی | `ip nat inside source static 192.168.1.20 203.0.113.20` |
+| Dynamic NAT | Pool عمومی برای گروه داخلی | نگاشت 1:1 موقت |
+| PAT / Overload | همه پشت یک IP عمومی | پورت‌ها متمایزکننده — اینترنت خانه |
+
+```cisco
+R1(config)# interface g0/0
+R1(config-if)# ip nat inside
+R1(config)# interface g0/1
+R1(config-if)# ip nat outside
+R1(config)# access-list 10 permit 192.168.1.0 0.0.0.255
+R1(config)# ip nat inside source list 10 interface g0/1 overload
+R1# show ip nat translations     ! جدول ترجمه زنده
+R1# show ip nat statistics
+```
+
+**PAT** همان «overload» است و انگلیسی‌سازی آزمون را حفظ کنید: NAT داخل→خارج با ACL مشخص و interface overload. ترجمه **قبل از** خروج از اینترفیس outside اتفاق می‌افتد و در تعامل با ACL و فایروال، ترتیب امور مهم است (ACL ترافیک را با IP «داخلی» می‌بیند، نه عمومی — سؤال ترفندی آزمون!).
+
+## سرویس‌های جانبی که آزمون می‌پرسد
+
+- **NTP:** هم‌گام‌سازی زمان؛ پیش‌نیاز لاگ معتبر و Kerberos. `ntp server 1.1.1.1` و `show ntp status`.
+- **DHCP سیسکو:** `ip dhcp pool LAN / network 192.168.1.0 /24 / default-router ... / dns-server ...` و `ip dhcp excluded-address` برای ثابت‌ها؛ رله با `ip helper-address` روی اینترفیس روبروی سرور.
+- **Syslog:** سطح‌های 0 تا 7 (emergency تا debugging) — عدد کمتر = بحرانی‌تر (سؤال حفظی مشهور). `logging host 192.168.1.50`.
+- **امنیت پایه سوئیچ:** رمز enable و VTY و SSH به‌جای Telnet، خاموش‌کردن پورت‌های بلااستفاده و **Port Security**:
+
+```cisco
+SW1(config-if)# switchport port-security
+SW1(config-if)# switchport port-security maximum 2
+SW1(config-if)# switchport port-security violation restrict
+SW1(config-if)# switchport port-security mac-address sticky
+```
+
+violation سه رفتار دارد: **protect** (بی‌صدا رد)، **restrict** (رد + log + شمارنده) و **shutdown** (پورت err-disabled — پیش‌فرض).
+
+## پایه اتوماسیون: شبکه برنامه‌پذیر
+
+CCNA جدید، فصل اتوماسیون دارد و انتظاراتش این‌هاست:
+
+- **سنتی vs کنترلر:** در معماری سنتی هر دستگاه مستقل کانفیگ می‌شود؛ در **SDN**، مستر کنترلر سیاست را به دستگاه‌ها می‌فرستد (مثل Cisco DNA Center). جداسازی Control Plane و Data Plane مفهوم کلیدی است.
+- **API و REST:** ابزارها با **REST API** حرف می‌زنند؛ متدهای HTTP را بدانید: GET (خواندن)، POST (ساختن)، PUT/PATCH (به‌روزرسانی)، DELETE.
+- **داده‌ها:** درخواست/پاسخ با **JSON** (ساختار کلید-مقدار با آکولاد و آرایه با کروشه) و در YAML (کارا و خوانا برای کانفیگ‌ها) — تفاوت را با چشم بشناسید.
+
+```json
+{"interface": {"name": "GigabitEthernet0/1", "enabled": true, "mtu": 1500}}
+```
+
+- **خودکارسازی عملی:** ابزار رایج مصاحبه‌ها و آزمون: **Ansible** (playbook با SSH روی تجهیزات) و روی دستگاه‌های سیسکو، NETCONF/RESTCONF به‌عنوان پروتکل‌های مدیریتی مدرن جای CLI دستی را می‌گیرند. شما لازم نیست امروز کدنویس باشید؛ باید بفهمید «چرا CLI دستی در مقیاس می‌میرد» (همان سناریوی drift که در مسیر کارشناس شبکه دیدید).
+
+## جمع‌بندی
+
+- ACL با اولین‌تطابق و implicit deny؛ استاندارد فقط منبع و نزدیک مقصد، extended دقیق و نزدیک منبع.
+- NAT سه شکل دارد: static (1:1)، dynamic (pool) و PAT/overload (همه پشت یک IP با تمایز پورت).
+- NTP و syslog و DHCP سرویس‌های جانبی هستند؛ سطح لاگ 0 بحرانی‌ترین و 7 کم‌اهمیت‌ترین است.
+- Port Security با sticky مک را قفل می‌کند؛ violation پیش‌فرض shutdown و پورت err-disabled می‌شود.
+- اتوماسیون یعنی REST API با JSON/YAML و کنترلر؛ آینده CLI دستی، NETCONF/RESTCONF و Ansible است.
+
+برای تمرین: در Packet Tracer یک سناریوی کامل ببندید: PAT برای شبکه داخلی، ACL extended که فقط HTTP/HTTPS به وب‌سرور می‌دهد، NTP و syslog به یک سرور داخلی و Port Security روی سوئیچ. بعد دستورات show هر بخش را تفسیر کنید — تفسیر showها، امضای داوطلب موفق CCNA است.

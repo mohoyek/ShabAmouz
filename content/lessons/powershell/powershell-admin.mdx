@@ -1,0 +1,123 @@
+---
+slug: powershell-admin
+path: powershell
+title: "مدیریت سیستم با پاورشل"
+summary: "مدیریت سرویس و فرآیند و شبکه، PS Remoting و Invoke-Command، ماژول ActiveDirectory و DSC معرفی"
+duration: 15
+order: 3
+---
+
+قدرت واقعی پاورشل جایی ظاهر می‌شود که به‌جای «دیدن»، «مدیریت» می‌کنید: ده سرویس را یک‌جا ری‌استارت کنید، صد کاربر اکتیو دایرکتوری بسازید یا بیست سرور را از یک ترمینال پایش کنید. این درس پایانی مسیر، دقیقاً همین سناریوهای واقعی ادمینی را پوشش می‌دهد و با DSC — نسخه پاورشلیِ «زیرساخت به‌مثابه کد» — تمام می‌شود.
+
+## سرویس، فرآیند و شبکه
+
+```powershell
+# سرویس‌ها
+Get-Service -Name wuauserv | Select Name, Status, StartType
+Restart-Service -Name Spooler -Force
+Set-Service -Name W32Time -StartupType Automatic
+Get-Service | Where-Object { $_.StartType -eq 'Automatic' -and $_.Status -eq 'Stopped' }
+
+# فرآیندها
+Get-Process | Sort-Object WS -Descending | Select -First 5 Name, Id, @{n='RAM_MB';e={[math]::Round($_.WS/1MB)}}
+Stop-Process -Id 4321 -Force
+Get-Process notepad | Stop-Process
+
+# شبکه و دیسک
+Get-NetIPAddress -AddressFamily IPv4 | Where-Object InterfaceAlias -notlike '*Loopback*'
+Get-NetTCPConnection -State Listen | Select LocalAddress, LocalPort, OwningProcess
+Get-Volume | Select DriveLetter, FileSystemLabel, @{n='FreeGB';e={[math]::Round($_.SizeRemaining/1GB,1)}}
+```
+
+نکته‌های آزمونی این قطعه: **Hash Table محاسبه‌ای** `@{n='X';e={expr}}` ستون محاسبه‌شده می‌سازد (سؤال پرتکرار Select-Object)؛ و OwningProcess در Get-NetTCPConnection شما را به PID فرآیندِ پورت‌گشا وصل می‌کند — ابزار طلایی «این پورت را چه چیزی گرفته؟».
+
+**WMI/CIM:** سنسورهای عمیق سیستم از Win32 از طریق `Get-CimInstance` می‌آیند (CIM جانشین مدرن WMI است): `Win32_OperatingSystem` (RAM و بوت)، `Win32_LogicalDisk` (فضا) و `Win32_ComputerSystem`. فیلتر سمت سرور با `-Filter "DriveType=3"` خیلی بهتر از فیلتر بعد از دریافت است.
+
+## PS Remoting: بیست سرور، یک ترمینال
+
+**WinRM** زیرساخت ریموت پاورشل است (پورت 5985/5986) و برخلاف RDP، هزار اتصال هم‌زمان سبک می‌سازد:
+
+```powershell
+# روی سرور مقصد (یک بار):
+Enable-PSRemoting -Force
+
+# از کارساز ادمین:
+Enter-PSSession -ComputerName SRV02        # سشن تعاملی — مثل SSH
+Exit-PSSession
+
+# اجرای گروهی — قلب اتوماسیون:
+Invoke-Command -ComputerName SRV01, SRV02, SRV03 -ScriptBlock {
+    Get-Service -Name 'W32Time','Spooler' | Select PSComputerName, Name, Status
+}
+
+# با Credential مشخص:
+$cred = Get-Credential CORP\Administrator
+Invoke-Command -ComputerName SRV02 -Credential $cred -ScriptBlock { hostname }
+
+# سشن دائمی برای چند فرمان:
+$s = New-PSSession -ComputerName SRV02
+Invoke-Command -Session $s -ScriptBlock { $env:COMPUTERNAME }
+Remove-PSSession $s
+```
+
+- **Invoke-Command** روی N سرور موازی اجرا می‌کند و خروجی‌ها با ستون **PSComputerName** برچسب می‌خورند (سؤال کلیدی آزمون).
+- در ScriptBlock ریموت، متغیرهای لوکال با `$using:` می‌روند: `{ $using:Path }`.
+- اسکریپت‌های تکرارشونده را در **PSSessionConfiguration** و Scheduled Taskها بچرخانید، نه با ریموت‌دسکتاپ دستی.
+
+## ماژول ActiveDirectory
+
+با نصب RSAT (یا روی DC)، مدیریت AD کامل به پاورشل می‌آید:
+
+```powershell
+Import-Module ActiveDirectory
+
+# ساخت گروهی کاربران از CSV
+Import-Csv .\users.csv | ForEach-Object {
+    New-ADUser -Name "$($_.First) $($_.Last)" `
+        -SamAccountName $_.Username `
+        -UserPrincipalName "$($_.Username)@corp.example.com" `
+        -Path "OU=Staff,DC=corp,DC=example,DC=com" `
+        -AccountPassword (ConvertTo-SecureString 'Init#Pass123' -AsPlainText -Force) `
+        -Enabled $true
+}
+
+# گزارش و پایش
+Get-ADUser -Filter 'Enabled -eq $false' | Select Name, SamAccountName
+Get-ADComputer -Filter * -SearchBase 'OU=Servers,DC=corp,DC=example,DC=com' |
+    Select Name, LastLogonDate
+Get-ADGroupMember -Identity 'Domain Admins'      # بازرسی گروه حساس!
+```
+
+قاعده واقعی محیط سازمان: هیچ کاربری با دست ساخته نمی‌شود؛ CSV + New-ADUser استاندارد HR IT است. بازرسی هفتگی Domain Admins هم کوتاه‌ترین مسیر «چرا دسترسی‌ها ناخواسته زیاد شد؟» است.
+
+## DSC: وضعیت مطلوب به‌جای دستور
+
+**Desired State Configuration** اعلان‌گرا (declarative) است: به‌جای «این کار را بکن»، می‌گویید «سیستم باید این‌شکل باشد» و موتور DSC خودش فاصله را پیدا و جبران می‌کند — همین ایده در Terraform و Ansible (مسیر DevOps) ادامه می‌یابد:
+
+```powershell
+Configuration WebServer {
+    Node 'SRV01' {
+        WindowsFeature IIS { Name = 'Web-Server'; Ensure = 'Present' }
+        File WebRoot {
+            DestinationPath = 'C:\inetpub\wwwroot'
+            Ensure          = 'Present'
+        }
+        Service Spooler { Name = 'Spooler'; State = 'Running'; StartupType = 'Automatic' }
+    }
+}
+WebServer -OutputPath .\mof
+Start-DscConfiguration -Path .\mof -Wait -Verbose
+Test-DscConfiguration        # فقط چک: منطبق است یا نه؟
+```
+
+سه مفهوم آزمونی: **Configuration** (بلوک تعریف)، **Resource** (واحد وضعیت: WindowsFeature، File، Service، Registry) و **Ensure** (Present/Absent). و تفاوت فلسفی: دستورات imperative یک‌بار اجرا می‌شوند؛ DSC idempotent است و drift را هم پایش می‌کند (Test-DscConfiguration).
+
+## جمع‌بندی
+
+- سرویس/فرآیند/شبکه با ستون محاسبه‌ای و Get-CimInstance مدیریت می‌شوند؛ OwningProcess راز پورت‌هاست.
+- PS Remoting با WinRM: Enter-PSSession برای تعاملی و Invoke-Command برای گروهی موازی با PSComputerName.
+- متغیرهای لوکال با $using: به ScriptBlock ریموت می‌روند؛ Credential با Get-Credential.
+- ماژول ActiveDirectory ساخت گروهی با CSV و بازرسی گروه‌های حساس را استاندارد می‌کند.
+- DSC وضعیت مطلوب را اعلان می‌کند (Ensure=Present) و با Test-DscConfiguration انحراف را می‌سنجد — پدر IaC ویندوزی.
+
+برای تمرین: سه VM ویندوزی بالا بیاورید، Remoting را فعال کنید و با یک Invoke-Command سه‌سروره گزارش سرویس‌های متوقف + فضای دیسک بگیرید؛ بعد یک CSV پنج‌ستونه بسازید و کاربرانش را با ماژول AD بسازید. با این تمرین، مسیر پاورشل شما تحویل‌دادنی است.

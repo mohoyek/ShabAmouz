@@ -1,8 +1,8 @@
 /**
  * اعتبارسنجی فایل‌های محتوا — شب‌آموز
  * اجرا: node scripts/validate-content.mjs
- * بررسی می‌کند: تعداد مسیرها (۷)، درس‌ها (۲۱)، دستورات مرجع (۱۵) در سه دسته
- * ۵تایی، سؤالات آزمون (۷۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
+ * بررسی می‌کند: تعداد مسیرها (۱۴)، درس‌ها (۴۲)، دستورات مرجع (۱۵) در سه دسته
+ * ۵تایی، سؤالات آزمون (۱۴۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
  * ۱۰ دستور ترمینال با قاعده ping google.com و نقشه راه دو مسیره ۴ مرحله‌ای.
  */
 import fs from "node:fs";
@@ -18,8 +18,11 @@ function check(condition, message) {
 
 /* ------------------------------- مسیرها ------------------------------- */
 const paths = JSON.parse(fs.readFileSync(path.join(contentDir, "paths.json"), "utf-8"));
-check(paths.length === 7, `تعداد مسیرها باید ۷ باشد (فعلاً: ${paths.length})`);
-const validColors = new Set(["teal", "amber", "violet", "cyan", "rose", "sky", "indigo"]);
+check(paths.length === 14, `تعداد مسیرها باید ۱۴ باشد (فعلاً: ${paths.length})`);
+const validColors = new Set([
+  "teal", "amber", "violet", "cyan", "rose", "sky", "indigo",
+  "green", "emerald", "lime", "blue", "orange", "purple",
+]);
 const validPathIds = new Set([
   "network-basics",
   "cmd-basics",
@@ -28,6 +31,13 @@ const validPathIds = new Set([
   "network-manager",
   "devops-engineer",
   "devops-architect",
+  "linux-lpic1",
+  "linux-lpic2",
+  "linux-lpic3",
+  "mcsa",
+  "mikrotik",
+  "ccna",
+  "powershell",
 ]);
 for (const p of paths) {
   check(validPathIds.has(p.id), `شناسه مسیر نامعتبر: ${p.id}`);
@@ -54,7 +64,7 @@ for (const p of paths) {
     lessonCount++;
   }
 }
-check(lessonCount === 21, `تعداد کل درس‌ها باید ۲۱ باشد (فعلاً: ${lessonCount})`);
+check(lessonCount === 42, `تعداد کل درس‌ها باید ۴۲ باشد (فعلاً: ${lessonCount})`);
 
 /* ----------------------------- مرجع دستورات ----------------------------- */
 const commands = JSON.parse(fs.readFileSync(path.join(contentDir, "reference.json"), "utf-8"));
@@ -77,7 +87,7 @@ check(byCategory.git === 5, `دسته گیت باید ۵ دستور داشته �
 
 /* -------------------------------- آزمون -------------------------------- */
 const questions = JSON.parse(fs.readFileSync(path.join(contentDir, "quiz.json"), "utf-8"));
-check(questions.length === 70, `تعداد سؤالات باید ۷۰ باشد (فعلاً: ${questions.length})`);
+check(questions.length === 140, `تعداد سؤالات باید ۱۴۰ باشد (فعلاً: ${questions.length})`);
 const qIds = new Set();
 const perPath = {};
 for (const q of questions) {

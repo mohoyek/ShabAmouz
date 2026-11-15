@@ -1,0 +1,98 @@
+---
+slug: mikrotik-bandwidth-wifi
+path: mikrotik
+title: "مدیریت پهنای باند و وایرلس"
+summary: "Simple Queue و Burst، منطق Queue Tree، Hotspot، پیکربندی وایرلس و پروفایل امنیتی و پایش با Graphing"
+duration: 15
+order: 3
+---
+
+دو درخواست همیشگی مشتری: «اینترنت را بین کاربران عادلانه تقسیم کن» و «وای‌فای را درست و امن کانفیگ کن». هر دو موضوع اصلی MTCNA هستند: Queueها و وایرلس. این درس پایانی مسیر میکروتیک، مدیریت پهنای باند را از Simple تا PCQ می‌برد و وایرلس را تا پروفایل امنیتی کامل می‌کند.
+
+## Simple Queue: تقسیم ساده
+
+**Queue** مکانیزم محدود و تضمین پهنای باند است. ساده‌ترین شکل، Simple Queue با دو عدد اصلی:
+
+- **Max Limit:** سقف مطلق (مثلاً 10M/10M — دانلود/آپلود).
+- **Target:** مشمول‌ها (IP، subnet یا اینترفیس).
+
+```routeros
+/queue simple
+add name=office target=192.168.10.0/24 max-limit=20M/20M
+add name=limited-users target=192.168.10.100/32 max-limit=2M/2M
+add name=guests target=192.168.20.0/24 max-limit=5M/5M
+```
+
+قاعده ترتیب همان اولین‌تطابق فایروال است: قواعد از بالا خوانده می‌شوند و پکت در اولین queue منطبق می‌ماند؛ پس قواعد خاص‌تر (تک IP) باید بالای قواعد کلی (subnet) بنشینند.
+
+**Burst** — قابلیت محبوب آزمون: اجازه رانش کوتاه بالاتر از سقف، وقتی اتصال «تازه شروع شده» و شبکه خلوت است:
+
+```routeros
+add name=user-burst target=192.168.10.101/32 max-limit=2M/2M \
+    burst-limit=5M/5M burst-threshold=1500k/1500k burst-time=8s/8s
+```
+
+منطق: تا وقتی میانگین مصرف در burst-time از burst-threshold کمتر است، کاربر تا burst-limit شتاب می‌گیرد؛ با پرشدن میانگین، به max-limit سقوط می‌کند. حس «سرعت گرفتن اول لینک» همین است.
+
+## Queue Tree و PCQ: عادلانه در مقیاس
+
+Simple Queue برای چند ده کاربر خوب است؛ در ISP واقعی، **Queue Tree** با ساختار درختی و صف‌های PCQ (Per Connection Queue) پهنای باند را بین همه «به‌طور مساوی» می‌شکند:
+
+```routeros
+/queue type
+add name=pcq-down kind=pcq pcq-rate=2M pcq-classifier=dst-address
+add name=pcq-up kind=pcq pcq-rate=2M pcq-classifier=src-address
+/queue tree
+add name=total-down parent=ether2 max-limit=100M queue=pcq-down
+```
+
+تفاوت classifier (سؤال کلاسیک): `dst-address` برای ترافیک دانلود (هر مقصد صف جدا) و `src-address` برای آپلود. با pcq-rate هر کاربر سقف فردی و بدون آن تقسیم مساوی خودکار است.
+
+**Priority و Kind:** صف‌ها انواع sfq، red و pcq دارند؛ و در Queue Tree می‌توان اولویت (۱ تا ۸) گذاشت — مثلاً ترافیک VoIP جلوتر از دانلود. برای MTCNA کافی است concept را بشناسید.
+
+## Hotspot: صفحة ورود
+
+**Hotspot** ویژگی «صفحه ورود» (Captive Portal) میکروتیک است: کاربر وای‌فای به شبکه وصل می‌شود ولی اینترنت را بعد از احراز هویت در صفحه مرورگر می‌گیرد — کافه، هتل، دانشگاه.
+
+```routeros
+/ip hotspot setup        # ویزارد: اینترفیس، IP، pool، پروفایل
+/ip hotspot user add name=guest1 password=1234 limit-uptime=1h
+/ip hotspot user profile set default shared-users=1
+```
+
+- کاربرها و کارت‌های زمانی (limit-uptime و rate-limit) در `/ip hotspot user` تعریف می‌شوند.
+- صفحه ورود HTML در فایل‌های hotspot قابل سفارشی‌سازی است؛ آمار لاگین در `/ip hotspot active`.
+- تمایز با DHCP Server معمولی: hotspot خودش یک لایه احراز هویت اضافه می‌کند و کانکشن‌های احرازنشده را به صفحه ورود هدایت می‌کند.
+
+## وایرلس: از فرکانس تا امنیت
+
+پیکربندی وایرلس در `/interface wireless`:
+
+```routeros
+/interface wireless set wlan1 mode=ap-bridge band=2ghz-b/g/n \
+    ssid="Office-WiFi" frequency=2437 channel-width=20/40mhz-Ce disabled=no
+
+# پروفایل امنیتی: WPA2-PSK
+/interface wireless security-profiles set default mode=dynamic-keys \
+    authentication-types=wpa2-psk,wpa2-eap wpa2-pre-shared-key="Complex#Key123"
+```
+
+نکات آزمون MTCNA:
+
+- **band و frequency:** در 2.4GHz فقط سه کانال بدون هم‌پوشانی داریم: 1 (2412)، 6 (2437) و 11 (2462). در 5GHz کانال‌ها بیشتر و تداخل کمتر ولی برد کمتر است.
+- **mode=ap-bridge** یعنی نقطه دسترسی واقعی با چند کلاینت؛ station یعنی کلاینت بودن.
+- **wpa2-psk** برای شبکه‌های کوچک (رمز مشترک) و **wpa2-eap** با سرور RADIUS برای سازمان‌ها (هر کاربر حساب خودش) — تمایز مهم آزمون.
+- **Access List وایرلس:** `/interface wireless access-list` اجازه/منع مک‌آدرس‌های مشخص و **Connection List** برای رد کلاینت‌های ضعیف‌سیگنال قبل از اتصال.
+- **MAC authentication به‌تنهایی امنیت نیست:** مک‌اسپوفینگ چند ثانیه کار دارد؛ آزمون همین را می‌خواهد که بدانید.
+
+پایش: **Graphing** نمودار ترافیک اینترفیس/queue را در وب می‌سازد (`/tool graphing interface add interface=ether1`)، **Torch** زنده‌بینی است و `interface wireless registration-table print` کلاینت‌های وصل را با سیگنال نشان می‌دهد.
+
+## جمع‌بندی
+
+- Simple Queue با max-limit و target و قاعده اولین‌تطابق؛ قواعد خاص بالای قواعد کلی.
+- Burst تا threshold و burst-time شتاب می‌دهد؛ بعد سقوط به max-limit — رفتار «سرعت اول لینک».
+- Queue Tree + PCQ مقیاس‌پذیر است؛ dst-address برای دانلود و src-address برای آپلود.
+- Hotspot صفحه ورود با کاربر و کارت زمانی است؛ لایه احراز هویت اضافه روی DHCP معمولی.
+- وایرلس: سه کانال بدون هم‌پوشانی در 2.4GHz، WPA2-PSK برای کوچک و EAP/RADIUS برای سازمان؛ مک‌فیلتر امنیت واقعی نیست.
+
+برای تمرین: روی CHR دو queue با burst بسازید و با speedtest دوگانه رفتار را ببینید؛ بعد یک hotspot با کاربر یک‌ساعته راه بیندازید. اگر روتر وایرلس واقعی دارید، پروفایل WPA2-PSK را با Access List تکمیل کنید — با این درس، MTCNA عملاً مال شماست.

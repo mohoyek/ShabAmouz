@@ -1,0 +1,93 @@
+---
+slug: winserver-services
+path: mcsa
+title: "سرویس‌های شبکه در ویندوز سرور"
+summary: "DHCP و Scope و Reservation، DNS و Zoneها و رکوردها، فایل‌سرور و مجوزهای NTFS و Share، RDP و پشتیبان‌گیری"
+duration: 15
+order: 3
+---
+
+دامنه بالا آمده؛ حالا سازمان به «سرویس» نیاز دارد: IP خودکار برای کاربران، حل‌نام داخلی، شیر همکاری فایل‌ها و دسترسی ریموت ادمین. این درس چهار سرویسی را پوشش می‌دهد که هر شبکه ویندوزی روی آن‌ها ایستاده و آزمون‌های MCSA/AZ-800 با ترکیب‌های گوناگون از همین‌ها سؤال می‌سازند.
+
+## DHCP: توزیع خودکار IP
+
+سرور DHCP چهار پیام کلاسیک **DORA** را مدیریت می‌کند: Discover (کلیت فریاد می‌زند)، Offer (سرور پیشنهاد می‌دهد)، Request (کلاینت می‌پذیرد)، Ack (سرور مهر می‌کند). مفاهیم پیکربندی:
+
+- **Scope:** بازه IP قابل واگذاری برای یک شبکه (مثلاً 192.168.1.100 تا 200) همراه ماسک، گیت‌وی و DNS.
+- **Exclusion و Reservation:** بازه‌های کنار‌گذاشته برای دستگاه‌های دستی؛ **Reservation** با آدرس MAC همان IP همیشگی می‌دهد (پرینترها و دوربین‌ها).
+- **Lease:** مدت قرارداد؛ پیش‌فرض ۸ روز. در شبکه‌های پرنوسان (وای‌فای مهمان) کوتاه‌تر بگذارید.
+
+```powershell
+Add-DhcpServerV4Scope -Name "LAN" -StartRange 192.168.1.100 `
+  -EndRange 192.168.1.200 -SubnetMask 255.255.255.0 -LeaseDuration 8:0:0
+Set-DhcpServerV4OptionValue -ScopeId 192.168.1.0 `
+  -Router 192.168.1.1 -DnsServer 192.168.1.10
+Add-DhcpServerv4Reservation -ScopeId 192.168.1.0 `
+  -IPAddress 192.168.1.50 -ClientId "AA-BB-CC-DD-EE-FF" -Name "PRN01"
+Get-DhcpServerv4Lease -ScopeId 192.168.1.0 | Select IP, HostName, LeaseExpiry
+```
+
+**نکته آزمون:** DHCP خودش برای «اجاره» به IP ثابت نیاز دارد؛ اگر روی DC نصب است، آن هم استاتیک. و در شبکه‌های چند سگمنت، **DHCP Relay Agent** (ip helper-address روی روتر) درخواست broadcast را به سرور می‌رساند.
+
+## DNS: کتابچه دامنه
+
+DNS ویندوز با AD یکپارچه است: Zoneهای **Active Directory-Integrated** — تکثیر خودشان با replication دامنه انجام می‌شود و فقط DCها می‌توانند بنویسند (سؤال تکرارشونده).
+
+رکوردهای روزمره:
+
+| رکورد | نقش | مثال |
+|---|---|---|
+| A | نام → IPv4 | `srv01.corp.example.com → 192.168.1.10` |
+| AAAA | نام → IPv6 | |
+| CNAME | نام مستعار | `intranet → srv01` |
+| MX | مسیر پست | `@ → mail.example.com` |
+| PTR | معکوس (IP → نام) | zone معکوس |
+| SRV | سرویس (AD زیاد استفاده می‌کند) | `_ldap._tcp` |
+
+```powershell
+Add-DnsServerPrimaryZone -Name "corp.example.com" -ZoneFile "corp.example.com.dns"
+Add-DnsServerResourceRecordA -ZoneName "corp.example.com" -Name srv01 -IPv4Address 192.168.1.10
+Add-DnsServerResourceRecordCName -ZoneName "corp.example.com" -Name intranet -HostNameAlias srv01.corp.example.com
+Resolve-DnsName srv01.corp.example.com      # تست جستجو
+nslookup intranet.corp.example.com
+```
+
+**Forwarder و Conditional Forwarding:** پرس‌وحوهایی که جواب داخلی ندارند به DNS بالادست (یا ریشه) می‌روند؛ برای دامنه شرکتی دیگر، Conditional Forwarder هدفمند تنظیم می‌کنید. اگر کلاینت‌ها «اینترنتی ندارند ولی آدرس IP دارند»، اول DHCP Option DNS و دوم Forwarder را چک کنید.
+
+## فایل‌سرور: دو لایه مجوز
+
+اشتراک فایل دو لایه مجوز دارد که جمعشان تعیین‌کننده دسترسی نهایی است (سؤال محبوب آزمون: جداول ترکیب NTFS و Share):
+
+- **Share Permission:** سطح ورود از شبکه — Read، Change، Full Control. برای سادگی، همیشه Everyone=Full بگذارید و مدیریت را به لایه دوم بسپارید.
+- **NTFS Permission:** روی پوشه/فایل واقعی؛ سطح‌بندی ریز با گروه‌ها. دسترسی مؤثر = محدودترین مجوز (در تقاطع Share و NTFS، محدودتر می‌چربد؛ ضمن یک لایه، جمع مجوزهاست).
+
+```powershell
+New-SmbShare -Name "Projects" -Path "D:\Shares\Projects" `
+  -FullAccess "CORP\Domain Admins" -ChangeAccess "CORP\Sales-Team" -ReadAccess "CORP\Interns"
+Get-SmbShare / Get-SmbShareAccess -Name Projects
+icacls "D:\Shares\Projects"      # دیدن ACL واقعی NTFS
+```
+
+قاعده AGDLP اینجا کاربرد واقعی می‌گیرد: مجوز فقط به گروه بدهید، هرگز به کاربر. برای بازرسی حجم و فایل تکراری، **File Server Resource Manager (FSRM)** کوتاه‌ها را می‌بندد (سهمیه، فیلتر نوع فایل).
+
+## دسترسی ریموت و پشتیبان
+
+- **RDP:** پورت 3389؛ برای ادمین لازم و برای اینترنت عمومی ممنوع — از VPN یا Bastion استفاده کنید. فعال‌سازی: `SystemPropertiesRemote` یا Group Policy. NLA (Network Level Authentication) باید روشن بماند.
+- **Windows Admin Center / RSAT:** مدیریت روزمره بدون ریموت‌دسکتاپ دائمی.
+- **بکاپ:** `wbadmin` و **Windows Server Backup**؛ هرگز بکاپ روی همان دیسک سیستم! System State را برای AD حتماً بگیرید.
+
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName WindowsServerBackup
+wbadmin start backup -backupTarget:E: -include:C: -allCritical -quiet
+wbadmin get versions -backupTarget:E:
+```
+
+## جمع‌بندی
+
+- DHCP با چرخه DORA کار می‌کند؛ Scope بازه‌ی، Reservation IP همیشگی با MAC و Relay پل شبکه‌های دور.
+- DNS یکپارچه با AD، Zoneهایش با replication دامنه تکثیر می‌شوند؛ رکوردهای A/AAAA/CNAME/MX/PTR/SRV را بشناسید.
+- مجوز فایل دو لایه است: Share برای ورود از شبکه و NTFS برای واقعیت دیسک؛ محدودترین مجوز در تقاطع برنده است و مجوز همیشه به گروه داده شود.
+- RDP برای ادمین با NLA و بدون افشای اینترنتی؛ بکاپ منظم روی رسانه جدا با تمرکز روی System State.
+- عیب‌یابی شبکه ویندوز: اول `ipconfig /all`، بعد `Resolve-DnsName` و لاگ‌های DHCP/DNS در Event Viewer.
+
+برای تمرین: روی DC آزمایشگاهی، DHCP با یک Scope و یک Reservation، DNS با دو رکورد و یک شیر Projects با سه گروه دسترسی راه بیندازید؛ بعد از یک کلاینت عضو دامنه همه‌چیز را امتحان کنید. با همین سرویس‌ها، شبکه ویندوزی کوچک تحویل‌دادنی است.

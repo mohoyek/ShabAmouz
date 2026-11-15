@@ -1,0 +1,92 @@
+---
+slug: active-directory
+path: mcsa
+title: "اکتیو دایرکتوری و Group Policy"
+summary: "معماری AD DS و دامنه و درخت و جنگل، OUs و گروه‌ها، Group Policy و وراثت، dcpromo مدرن و ابزارهای روزمره"
+duration: 15
+order: 2
+---
+
+اکتیو دایرکتوری (AD DS) مرکز هویت هر سازمان ویندوزی است: کاربران، کامپیوترها و گروه‌ها همه اینجا زندگی می‌کنند و همان نام‌کاربری/رمزی که شما با آن لاگین می‌کنید، از همین‌جا اعتبارسنجی می‌شود. این درس، دامنه را از صفر بالا می‌آورد و با Group Policy مدیریت متمرکز را یاد می‌دهد — قلب آزمون‌های MCSA و AZ-800.
+
+## معماری: دامنه، درخت، جنگل
+
+چهار مفهوم ساختاری را ترتیبی بچینید:
+
+- **Domain:** واحد اصلی امنیت. یک دامنه مثل `corp.example.com` دیتابیس خودش را دارد (NTDS.dit) و یک کپی از آن روی هر **Domain Controller (DC)**.
+- **Tree:** چند دامنه با namespace پیوسته (`corp.example.com` و `branch.corp.example.com`) درخت می‌سازند.
+- **Forest:** سطح بالاتر؛ مجموعه درخت‌ها با یک Schema و Global Catalog مشترک. مرز امنیتی کل محیط، جنگل است نه دامنه (سؤال کلاسیک آزمون!).
+- **Domain Controller:** هر DC یک کپی قابل‌نوشتن از دیتابیس دارد — مدل Multi-Master؛ تغییر روی هر DC انجام و با **Replication** به بقیه پخش می‌شود. همیشه دو DC داشته باشید؛ تک‌DC یعنی تک‌نقطه شکست.
+
+بالاتر از همه، نقش‌های **FSMO** قرار دارند: پنج نقش تخصصی (Schema Master، Domain Naming Master، PDC Emulator، RID Master، Infrastructure Master) که هر کدام فقط روی یک DC فعال‌اند.
+
+## راه‌اندازی دامنه
+
+اول نقش AD DS را نصب کنید (درس قبل)، بعد ارتقا به DC:
+
+```powershell
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+Install-ADDSForest -DomainName corp.example.com -DomainNetbiosName CORP `
+  -SafeModeAdministratorPassword (Read-Host -AsSecureString) -Force
+```
+
+بعد از ری‌بوت، سرور DC است. ابزارهای روزمره (روی DC یا از RSAT):
+
+```powershell
+# ساخت و مدیریت کاربران
+New-ADUser -Name "Reza Ahmadi" -SamAccountName reza.ahmadi `
+  -UserPrincipalName reza.ahmadi@corp.example.com `
+  -Path "OU=Sales,DC=corp,DC=example,DC=com" -Enabled $true `
+  -AccountPassword (Read-Host -AsSecureString)
+
+Get-ADUser -Filter * -SearchBase "OU=Sales,DC=corp,DC=example,DC=com" | Select SamAccountName
+Set-ADAccountPassword -Identity reza.ahmadi -Reset
+Disable-ADAccount -Identity reza.ahmadi
+
+# گروه‌ها
+New-ADGroup -Name "Sales-Share-RO" -GroupScope Global -GroupCategory Security
+Add-ADGroupMember -Identity "Sales-Share-RO" -Members reza.ahmadi
+```
+
+**ساختار OU در برابر گروه:** OU ظرف سازمان‌دهی و اعمال GPO است (Sales، IT، Servers)، گروه ظرف مجوز است. **AGDLP** قاعده کلاسیک: حساب‌ها در گروه Global، گروه‌های Domain Local مجوز منابع می‌گیرند — سؤال همیشگی آزمون.
+
+## Group Policy: قانون‌گذاری متمرکز
+
+**GPO** مجموعه تنظیماتی است که به containerها (سایت، دامنه، OU) متصل می‌شود و روی همه اشیای داخلشان اعمال می‌گردد. ویرایش با **Group Policy Management Editor** (gpmc.msc)؛ دو بخش اصلی: Computer Configuration (هنگام بوت) و User Configuration (هنگام لاگین).
+
+ترتیب اعمال (LSDOU): **L**ocal ← **S**ite ← **D**omain ← **OU**ها از بیرون به داخل؛ یعنی GPO نزدیک‌تر به کاربر، برنده است (سؤال محبوب آزمون). دو کنترل حرفه‌ای:
+
+- **Link Enabled / Enforced:** Enforced ارتباط والد-فرزند را نمی‌شکند و همیشه اعمال می‌شود.
+- **Block Inheritance:** OU از گرفتن GPOهای بالادست جلوگیری می‌کند (مگر GPO Enforced).
+
+```powershell
+# سناریوی واقعی: ممنوع‌کردن USB روی سرورهای حساس
+New-GPO -Name "Lock USB - Servers"
+New-GPLink -Name "Lock USB - Servers" -Target "OU=Servers,DC=corp,DC=example,DC=com"
+Get-GPOReport -Name "Lock USB - Servers" -ReportType Html -Path C:\Temp\rpt.html
+```
+
+**قاعده طلایی GPO:** روی OU پیش‌فرض Users و Computers کاری نکنید؛ اول زیرساخت OU بسازید، اشیاء را منتقل کنید و GPO را به OU ببندید. و هرگز «Account Lockout» را روی خود DC با GPO بی‌دقت اعمال نکنید — خودتان را از دامنه قفل می‌کنید!
+
+## ابزارهای عیب‌یابی
+
+```powershell
+gpupdate /force          # اعمال فوری GPO
+gpresult /r              # چه GPOهایی روی من اعمال شده؟
+gpresult /h C:\rpt.html  # گزارش کامل HTML
+dcdiag /v                # سلامت DC و replication
+repadmin /replsummary    # وضعیت تکثیر بین DCها
+netlogon.log             # لاگ ورودهای دامنه
+```
+
+اگر «کاربر policy نگرفته»: اول `gpresult /r` ببینید، بعد مسیر OU و لینک GPO را چک کنید و در نهایت replication با repadmin. ۹۰٪ مشکلات GPO یکی از این سه است.
+
+## جمع‌بندی
+
+- دامنه واحد امنیت است، جنگل مرز نهایی؛ هر DC کپی کامل دیتابیس دارد و تکثیر Multi-Master است.
+- همیشه حداقل دو DC و یک بکاپ System State داشته باشید؛ FSMO پنج نقش تک‌نفره دارند.
+- کاربران با New-ADUser ساخته می‌شوند؛ OU برای ساختار و GPO، گروه برای مجوز (AGDLP).
+- GPO با ترتیب LSDOU اعمال می‌شود؛ Enforced و Block Inheritance دو کنترل جریان آن‌اند.
+- عیب‌یابی با gpupdate و gpresult و repadmin شروع می‌شود؛ ساختار OU درست، نصف دردهای GPO را از بین می‌برد.
+
+برای تمرین: یک DC راه بیندازید، سه OU بسازید (IT، Sales، Servers)، ده کاربر با پاورشل بسازید و یک GPO ممنوعیت تغییر والپیپر را فقط روی Sales ببندید و با gpresult ردگیری کنید. در درس بعد سراغ سرویس‌های شبکه ویندوز می‌رویم.

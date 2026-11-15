@@ -919,5 +919,920 @@
       "error budget"
     ],
     "explanation": "هشدار مبتنی بر سرعت سوختن بودجه خطا فقط وقتی به صدا درمی‌آید که تجربه کاربر واقعاً در خطر باشد؛ ضد خستگی هشدار است."
+  },
+  {
+    "id": "l1-q1",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "در لینوکس، «همه‌چیز فایل است» به چه معناست؟",
+    "options": [
+      "فقط داده‌های کاربر به‌شکل فایل ذخیره می‌شوند",
+      "دستگاه‌ها، اطلاعات فرآیندها و سخت‌افزار هم از طریق فایل‌های ویژه نمایش داده می‌شوند",
+      "لینوکس فقط با فایل‌های متنی کار می‌کند",
+      "هر پوشه حداکثر یک فایل می‌تواند داشته باشد"
+    ],
+    "correctIndex": 1,
+    "explanation": "فلسفه یونیکسی می‌گوید همه‌چیز فایل است: دیسک‌ها در /dev، اطلاعات فرآیندها در /proc و پیکربندی‌ها به‌شکل فایل متنی در /etc نمایش داده می‌شوند."
+  },
+  {
+    "id": "l1-q2",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "فایل‌های پیکربندی سیستم عمدتاً در کدام پوشه نگهداری می‌شوند؟",
+    "options": [
+      "/var",
+      "/etc",
+      "/bin",
+      "/tmp"
+    ],
+    "correctIndex": 1,
+    "explanation": "طبق استاندارد FHS، پوشه /etc محل فایل‌های پیکربندی متنی سیستم است؛ /var داده‌های متغیر مثل لاگ و /tmp فایل‌های موقت است."
+  },
+  {
+    "id": "l1-q3",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "خروجی دستور chmod 750 برای یک اسکریپت چه مجوزی می‌سازد؟",
+    "options": [
+      "rwxrwxrwx",
+      "rwxr-x---",
+      "rwxr-xr-x",
+      "rw-r--r--"
+    ],
+    "correctIndex": 1,
+    "explanation": "عدد ۷ (rwx) برای مالک، ۵ (r-x) برای گروه و ۰ (---) برای دیگران؛ یعنی rwxr-x--- که برای اسکریپت‌های تیمی مناسب است."
+  },
+  {
+    "id": "l1-q4",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "تفاوت اصلی لینک سخت (Hard Link) با لینک نمادین (Symbolic Link) چیست؟",
+    "options": [
+      "لینک سخت به مسیر مقصد اشاره می‌کند ولی نمادین به inode",
+      "لینک سخت همان inode مقصد است و با حذف فایل اصل نمی‌شکند، ولی فقط در همان فایل‌سیستم معتبر است",
+      "لینک نمادین فقط برای پوشه مجاز است",
+      "هیچ تفاوتی ندارند و فقط نامشان فرق دارد"
+    ],
+    "correctIndex": 1,
+    "explanation": "لینک سخت نام دومی برای همان inode است (حذف اصل را زنده نگه می‌دارد ولی بین فایل‌سیستم‌ها و روی پوشه مجاز نیست)؛ لینک نمادین میان‌بری به مسیر است و با حذف مقصد می‌شکند."
+  },
+  {
+    "id": "l1-q5",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "کدام دستور فرآیندها را به‌صورت زنده و با مصرف CPU و RAM نمایش می‌دهد؟",
+    "options": [
+      "ps aux",
+      "top",
+      "ls -la",
+      "kill -9"
+    ],
+    "correctIndex": 1,
+    "explanation": "دستور top نمایش زنده و مرتب‌شونده فرآیندها با مصرف CPU و RAM است؛ ps aux یک عکس لحظه‌ای می‌گیرد."
+  },
+  {
+    "id": "l1-q6",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "فرق سیگنال TERM (۱۵) با KILL (۹) چیست؟",
+    "options": [
+      "هر دو یکسان‌اند",
+      "TERM به فرآیند فرصت پاک‌سازی می‌دهد، KILL بلافاصله توسط هسته اجرا می‌شود",
+      "KILL فقط برای فرآیندهای root است",
+      "TERM فقط روی پوشه‌ها اثر دارد"
+    ],
+    "correctIndex": 1,
+    "explanation": "SIGTERM درخواست مؤدبانه خروج است و فرآیند می‌تواند فایل‌ها را ببندد؛ SIGKILL مستقیماً توسط هسته اجرا می‌شود و به فرآیند هیچ شانسی نمی‌دهد."
+  },
+  {
+    "id": "l1-q7",
+    "path": "linux-lpic1",
+    "type": "mc",
+    "text": "در systemd، تفاوت systemctl restart و systemctl reload برای nginx چیست؟",
+    "options": [
+      "هر دو سرویس را می‌بندند و از نو راه می‌اندازند",
+      "reload فقط کانفیگ را دوباره می‌خواند بدون قطع سرویس، restart سرویس را کامل از نو راه می‌اندازد",
+      "restart فقط برای سرویس‌های شبکه است",
+      "reload سرویس را غیرفعال می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "restart سرویس را متوقف و از نو راه می‌اندازد (اتصال‌ها قطع می‌شوند)؛ reload فقط فایل پیکربندی را دوباره بارگذاری می‌کند و سرویس ادامه می‌دهد."
+  },
+  {
+    "id": "l1-q8",
+    "path": "linux-lpic1",
+    "type": "blank",
+    "text": "برای دیدن فایل‌های مخفی همراه با جزئیات در لینوکس، دستور ls با دو سوئیچ ____ را اجرا می‌کنیم.",
+    "acceptedAnswers": [
+      "-la",
+      "-al"
+    ],
+    "explanation": "سوئیچ -a فایل‌های مخفی (نقطه‌دار) را نشان می‌دهد و -l جزئیات کامل (مجوز، مالک، اندازه) را."
+  },
+  {
+    "id": "l1-q9",
+    "path": "linux-lpic1",
+    "type": "blank",
+    "text": "برای ویرایش سیاست‌های sudo باید از دستور ویژه ____ استفاده کرد که پیش از ذخیره، معتبربودن فایل را بررسی می‌کند.",
+    "acceptedAnswers": [
+      "visudo"
+    ],
+    "explanation": "ویرایش مستقیم /etc/sudoers خطرناک است؛ دستور visudo قبل از ذخیره سینتکس را چک می‌کند تا خطای پیکربندی، دسترسی sudo را کلاً از بین نبرد."
+  },
+  {
+    "id": "l1-q10",
+    "path": "linux-lpic1",
+    "type": "blank",
+    "text": "برای فعال‌کردن اجرای خودکار یک سرویس در زمان بوت، از دستور systemctl با کلمه کلیدی ____ استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "enable"
+    ],
+    "explanation": "دستور systemctl enable لینک لازم برای اجرای خودکار هنگام بوت می‌سازد؛ start فقط برای همین جلسه سرویس را روشن می‌کند."
+  },
+  {
+    "id": "l2-q1",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "کدام مورد از مزایای GPT نسبت به MBR است؟",
+    "options": [
+      "سازگاری با ویندوز XP قدیمی",
+      "پشتیبانی از دیسک‌های بزرگ‌تر از ۲ ترابایت و تا ۱۲۸ پارتیشن",
+      "نیاز به فضای کمتر",
+      "عدم نیاز به فایل‌سیستم"
+    ],
+    "correctIndex": 1,
+    "explanation": "GPT تا ۹.۴ زتابایت دیسک، ۱۲۸ پارتیشن، جدول پشتیبان و سازگاری با UEFI را پشتیبانی می‌کند؛ سقف MBR دو ترابایت و چهار پارتیشن اصلی است."
+  },
+  {
+    "id": "l2-q2",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "در LVM، ترتیب صحیح لایه‌ها کدام است؟",
+    "options": [
+      "LV → VG → PV",
+      "PV → VG → LV",
+      "VG → LV → PV",
+      "PV → LV → VG"
+    ],
+    "correctIndex": 1,
+    "explanation": "حجم فیزیکی (PV) عضو گروه حجمی (VG) می‌شود و از فضای VG، حجم منطقی (LV) ساخته و فرمت می‌شود."
+  },
+  {
+    "id": "l2-q3",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "برای بزرگ‌کردن زنده یک فایل‌سیستم XFS بعد از lvextend، کدام دستور لازم است؟",
+    "options": [
+      "resize2fs",
+      "xfs_growfs",
+      "mkfs.xfs",
+      "fsck"
+    ],
+    "correctIndex": 1,
+    "explanation": "XFS با xfs_growfs و آدرس نقطه mount بزرگ می‌شود؛ resize2fs مخصوص ext2/3/4 و آدرس دستگاه است و XFS اصلاً کاهش اندازه ندارد."
+  },
+  {
+    "id": "l2-q4",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "حداقل چند دیسک برای RAID 5 لازم است و چند خرابی را تحمل می‌کند؟",
+    "options": [
+      "۲ دیسک؛ یک خرابی",
+      "۳ دیسک؛ یک خرابی",
+      "۴ دیسک؛ دو خرابی",
+      "۳ دیسک؛ دو خرابی"
+    ],
+    "correctIndex": 1,
+    "explanation": "RAID 5 با حداقل سه دیسک وparity توزیع‌شده، از بین رفتن یک دیسک را تحمل می‌کند؛ تحمل دو خرابی هم‌زمان مخصوص RAID 6 است."
+  },
+  {
+    "id": "l2-q5",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "مرحله چهارم زنجیره عیب‌یابی شبکه (پس از ping لوکال، بررسی ip link و ping گیت‌وی) چیست؟",
+    "options": [
+      "نصب مجدد سیستم‌عامل",
+      "ping به یک IP خارجی مثل 8.8.8.8",
+      "تغییر DNS",
+      "چک کردن fstab"
+    ],
+    "correctIndex": 1,
+    "explanation": "بعد از سالم‌بودن لوکال و گیت‌وی، با ping به IP خارجی بررسی می‌کنیم که مسیر به اینترنت باز است؛ اگر جواب داد و دامنه نه، مشکل DNS است."
+  },
+  {
+    "id": "l2-q6",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "چرا برای احراز هویت SSH از کلید به‌جای رمز استفاده می‌شود؟",
+    "options": [
+      "کلیدها همیشه کوتاه‌تر هستند",
+      "کلید مقاوم به حملات brute-force است و با غیرفعال‌کردن رمز، ورود مهاجمان عملاً بسته می‌شود",
+      "رمزها در SSH پشتیبانی نمی‌شوند",
+      "کلید فقط روی ویندوز کار می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "احراز هویت با کلید (ترجیحاً ed25519) به جای رمز، حمله‌های حدس‌زدن رمز را بی‌اثر می‌کند و با PasswordAuthentication no در sshd_config تکمیل می‌شود."
+  },
+  {
+    "id": "l2-q7",
+    "path": "linux-lpic2",
+    "type": "mc",
+    "text": "تفاوت rsync و scp در همگام‌سازی فایل‌ها چیست؟",
+    "options": [
+      "rsync فقط یک فایل منتقل می‌کند",
+      "rsync فقط تفاوت‌ها را منتقل و حذف‌ها را با --delete همگام می‌کند؛ مناسب بکاپ دوره‌ای است",
+      "scp رمزنگاری نمی‌کند",
+      "rsync فقط روی شبکه محلی کار می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "rsync الگوریتم دلتا دارد و فقط بخش‌های تغییرکرده را می‌فرستد؛ با --delete ساختار مقصد را دقیقاً همگام می‌کند و برای بکاپ استاندارد است."
+  },
+  {
+    "id": "l2-q8",
+    "path": "linux-lpic2",
+    "type": "blank",
+    "text": "برای اتصال دائمی پارتیشن پس از هر بوت، باید آن را در فایل ____ ثبت کنیم؛ ترجیحاً با UUID و نه نام دستگاه.",
+    "acceptedAnswers": [
+      "/etc/fstab",
+      "fstab"
+    ],
+    "explanation": "فایل /etc/fstab نقاط اتصال دائمی را تعریف می‌کند؛ استفاده از UUID به‌جای /dev/sdb1 باعث می‌شود تغییر ترتیب دیسک‌ها پیکربندی را نشکند."
+  },
+  {
+    "id": "l2-q9",
+    "path": "linux-lpic2",
+    "type": "blank",
+    "text": "برای دیدن پورت‌های باز TCP/UDP همراه با نام فرآیند در لینوکس مدرن، از دستور ____ با گزینه‌های tulpn استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "ss"
+    ],
+    "explanation": "ابزار ss جایگزین منسوخ‌شده netstat است؛ -t برای TCP، -u برای UDP، -l برای listenerها، -p برای فرآیند و -n برای نمایش عددی."
+  },
+  {
+    "id": "l2-q10",
+    "path": "linux-lpic2",
+    "type": "blank",
+    "text": "در zone فایل DNS، برای اعلام سرور پست الکترونیک دامنه از رکورد ____ استفاده می‌شود.",
+    "acceptedAnswers": [
+      "MX",
+      "mx"
+    ],
+    "explanation": "رکورد MX مقصد ایمیل دامنه را با اولویت مشخص می‌کند؛ A نام به IP، CNAME نام مستعار و PTR جستجوی معکوس است."
+  },
+  {
+    "id": "l3-q1",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "در LDAP، آدرس یکتای هر entry چه نامیده می‌شود و چطور ساخته می‌شود؟",
+    "options": [
+      "MAC؛ از مک‌آدرس سرور",
+      "DN؛ از ترکیب ویژگی‌های یکتا در مسیر درخت از پایین به بالا",
+      "UUID؛ تصادفی",
+      "SID؛ توسط ویندوز"
+    ],
+    "correctIndex": 1,
+    "explanation": "Distinguished Name مثل uid=reza,ou=people,dc=example,dc=org مسیر entry در درخت دایرکتوری است و از پایین (leaf) به ریشه خوانده می‌شود."
+  },
+  {
+    "id": "l3-q2",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "نقش TGT در Kerberos چیست؟",
+    "options": [
+      "رمزنگاری دیسک کاربر",
+      "بلیت اولیه‌ای که با آن Service Ticket سرویس‌های دیگر گرفته می‌شود",
+      "سند مجوز خرید",
+      "فایل لاگ ورودها"
+    ],
+    "correctIndex": 1,
+    "explanation": "کلاینت ابتدا از AS سرور KDC یک TGT می‌گیرد و بعد با آن از TGS بلیت هر سرویس را؛ رمز کاربر هرگز به خود سرویس‌ها نمی‌رسد و Single Sign-On فراهم می‌شود."
+  },
+  {
+    "id": "l3-q3",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "برای پشتیبان‌گیری کامل از دایرکتوری OpenLDAP کدام دستور استفاده می‌شود؟",
+    "options": [
+      "ldapsearch -x",
+      "slapcat -l backup.ldif",
+      "tar -czf",
+      "rsync"
+    ],
+    "correctIndex": 1,
+    "explanation": "slapcat کل DIT را به قالب LDIF خروجی می‌دهد (با slapd خاموش یا حالت read-only) و بازگردانی با slapadd انجام می‌شود؛ ldapsearch فقط جستجوی شبکه‌ای است."
+  },
+  {
+    "id": "l3-q4",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "کانتینر چگونه ایزوله می‌شود و چه چیزی با میزبان مشترک است؟",
+    "options": [
+      "ماشین مجازی کامل با کرنل جدا",
+      "با namespace (مرز دید) و cgroup (سقف منابع) ایزوله می‌شود ولی همان هسته میزبان را استفاده می‌کند",
+      "هیچ ایزوله‌ای ندارد",
+      "فقط با رمز عبور جدا می‌شود"
+    ],
+    "correctIndex": 1,
+    "explanation": "کانتینر ترکیب namespace و cgroup روی هسته مشترک میزبان است؛ به همین دلیل استارت آن میلی‌ثانیه‌ای است و سربار VM ندارد."
+  },
+  {
+    "id": "l3-q5",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "مزیت اصلی Podman نسبت به Docker کدام است؟",
+    "options": [
+      "پشتیبانی از Dockerfile ندارد",
+      "بدون دیمن مرکزی و با پشتیبانی از اجرای rootless؛ سطح حمله امنیتی کمتر",
+      "فقط روی مک کار می‌کند",
+      "کانتینر نمی‌سازد"
+    ],
+    "correctIndex": 1,
+    "explanation": "Podman daemonless است و کانتینرها را بدون سرویس مرکزی و به‌طور پیش‌فرض بدون root میزبانی می‌کند؛ در صورت نفوذ، مهاجم فقط با مجوز کاربر عادی است."
+  },
+  {
+    "id": "l3-q6",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "«Config Drift» در زیرساخت دستی به چه معناست؟",
+    "options": [
+      "خراب شدن هارد سرور",
+      "دورشدن تدریجی پیکربندی سرورها از هم و از وضعیت مستند به‌خاطر تغییرات دستی پراکنده",
+      "افزایش مصرف CPU با زمان",
+      "شکست DNS"
+    ],
+    "correctIndex": 1,
+    "explanation": "وقتی هر سرور جداگانه و دستی تغییر می‌کند، وضعیت‌ها کم‌کم فاصله می‌گیرند و هیچ‌کس تصویر واقعی سیستم را ندارد؛ درمان آن مدیریت پیکربندی مثل Ansible است."
+  },
+  {
+    "id": "l3-q7",
+    "path": "linux-lpic3",
+    "type": "mc",
+    "text": "FreeIPA چه اجزایی را در یک بسته ترکیب می‌کند؟",
+    "options": [
+      "فقط وب‌سرور و PHP",
+      "LDAP + Kerberos + DNS + سیاست‌های هویت برای مدیریت متمرکز کاربران و میزبان‌ها",
+      "فقط فایروال",
+      "Docker و Kubernetes"
+    ],
+    "correctIndex": 1,
+    "explanation": "FreeIPA راهکار هویت سازمانی لینوکس است: پایگاه LDAP، احراز هویت Kerberos، DNS یکپارچه و سیاست‌ها؛ عضویت کلاینت‌ها با ipa-client-install انجام می‌شود."
+  },
+  {
+    "id": "l3-q8",
+    "path": "linux-lpic3",
+    "type": "blank",
+    "text": "در Ansible، فایلی که فهرست میزبان‌ها و گروه‌های آن‌ها را تعریف می‌کند ____ نام دارد.",
+    "acceptedAnswers": [
+      "inventory",
+      "hosts",
+      "inventory file"
+    ],
+    "explanation": "inventory (پیش‌فرض /etc/ansible/hosts) میزبان‌ها و گروه‌ها را تعریف می‌کند؛ playbook وضعیت مطلوب و module واحد کار است."
+  },
+  {
+    "id": "l3-q9",
+    "path": "linux-lpic3",
+    "type": "blank",
+    "text": "برای آزمایش بی‌خطر یک playbook بدون تغییر واقعی سرورها، از فلگ ____ در ansible-playbook استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "--check",
+      "check"
+    ],
+    "explanation": "گزینه --check حالت dry-run است: تغییرات گزارش می‌شوند ولی اعمال نمی‌شوند؛ ترکیب با --diff نشان می‌دهد چه چیزی عوض می‌شد."
+  },
+  {
+    "id": "l3-q10",
+    "path": "linux-lpic3",
+    "type": "blank",
+    "text": "برای محافظت از فایل حاوی رمزها در پروژه Ansible از دستور ____ استفاده می‌کنیم تا فایل رمزنگاری شود.",
+    "acceptedAnswers": [
+      "ansible-vault",
+      "vault"
+    ],
+    "explanation": "ansible-vault فایل‌های متغیر حساس را رمزنگاری می‌کند (encrypt/decrypt/view/rekey) تا رمزها هرگز به‌شکل متنی در مخزن گیت ننشینند."
+  },
+  {
+    "id": "mcsa-q1",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "تفاوت اصلی Windows Server Standard و Datacenter چیست؟",
+    "options": [
+      "Datacenter رابط گرافیکی بیشتری دارد",
+      "مجوز و امکانات مجازی‌سازی: Datacenter ماشین مجازی نامحدود و ویژگی‌های پیشرفته دارد",
+      "Standard امنیت کمتری دارد",
+      "هیچ تفاوتی ندارند"
+    ],
+    "correctIndex": 1,
+    "explanation": "ویژگی‌های پایه دو نسخه یکسان است؛ Datacenter برای مجازی‌سازی سنگین با مجوز VM نامحدود و امکاناتی مثل Storage Spaces Direct است."
+  },
+  {
+    "id": "mcsa-q2",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "کدام گزینه درباره Server Core درست است؟",
+    "options": [
+      "تبدیل Desktop Experience به Core ممکن است",
+      "تبدیل Core به Desktop Experience ممکن است ولی برعکس نه؛ Core سطح حمله کوچک‌تری دارد",
+      "Server Core بدون پاورشل است",
+      "Server Core فقط برای DNS است"
+    ],
+    "correctIndex": 1,
+    "explanation": "تبدیل یک‌طرفه است: از Core می‌توانید به Desktop بروید، برعکس نه. Core بدون دسکتاپ، با مصرف منابع و سطح حمله کمتر، توصیه مایکروسافت برای تولید است."
+  },
+  {
+    "id": "mcsa-q3",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "چرا سرورهایی که نقش DHCP یا DNS را دارند باید IP استاتیک داشته باشند؟",
+    "options": [
+      "برای صرفه‌جویی در IP",
+      "چون کلاینت‌ها و سرویس‌ها باید همیشه آن‌ها را در یک آدرس پایدار پیدا کنند",
+      "چون DHCP روی IP پویا کار نمی‌کند مگر با VPN",
+      "فقط برای سرعت بیشتر"
+    ],
+    "correctIndex": 1,
+    "explanation": "سرویس‌های زیرساختی باید با آدرس پایدار شناخته شوند؛ خود DHCP هم برای واگذاری به IP ثابت نیاز دارد. IP پویا روی سرور زیرساختی یعنی کابوس عیب‌یابی."
+  },
+  {
+    "id": "mcsa-q4",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "در اکتیو دایرکتوری، مرز امنیتی نهایی کدام است؟",
+    "options": [
+      "OU",
+      "Domain",
+      "Forest",
+      "Group"
+    ],
+    "correctIndex": 1,
+    "explanation": "جنگل (Forest) مرز امنیتی نهایی است و Schema و Global Catalog مشترک دارد؛ دامنه واحد اصلی امنیت و OU فقط ظرف سازمان‌دهی و اعمال GPO است."
+  },
+  {
+    "id": "mcsa-q5",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "ترتیب اعمال Group Policyها (LSDOU) چگونه است و کدام برنده می‌شود؟",
+    "options": [
+      "OU → Domain → Site → Local؛ اولی برنده",
+      "Local → Site → Domain → OU؛ نزدیک‌ترین به شیء (آخری) برنده",
+      "ترتیب تصادفی دارد",
+      "همه با هم ترکیب متوسط می‌شوند"
+    ],
+    "correctIndex": 1,
+    "explanation": "GPOها به‌ترتیب Local، Site، Domain و سپس OUها از بیرون به داخل اعمال می‌شوند؛ تنظیم GPO نزدیک‌تر به کاربر، تنظیم قبلی را بازنویسی می‌کند (مگر Enforced)."
+  },
+  {
+    "id": "mcsa-q6",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "دسترسی مؤثر یک کاربر به شیر فایل وقتی Share و NTFS هم‌زمان اعمال می‌شوند چگونه محاسبه می‌شود؟",
+    "options": [
+      "مجموع مجوزها",
+      "محدودترین (مقیّدترین) مجوز در تقاطع دو لایه",
+      "فقط Share مهم است",
+      "فقط NTFS مهم است"
+    ],
+    "correctIndex": 1,
+    "explanation": "دو لایه مستقل ارزیابی می‌شوند و در تقاطع، محدودترین مجوز برنده است؛ درون یک لایه، مجوزهای دریافتی از گروه‌های مختلف با هم جمع می‌شوند (و Deny مقدم است)."
+  },
+  {
+    "id": "mcsa-q7",
+    "path": "mcsa",
+    "type": "mc",
+    "text": "برای اینکه پرینتر در شبکه همیشه یک IP ثابت بگیرد اما همچنان از DHCP استفاده کند، چه چیزی می‌سازیم؟",
+    "options": [
+      "Scope جدید",
+      "Reservation بر اساس MAC",
+      "Static route",
+      "Forwarder"
+    ],
+    "correctIndex": 1,
+    "explanation": "Reservation در DHCP باClientId (مک‌آدرس) یک IP همیشگی به دستگاه می‌دهد؛ مدیریت IPها متمرکز می‌ماند و دستگاه آدرس ثابت می‌گیرد."
+  },
+  {
+    "id": "mcsa-q8",
+    "path": "mcsa",
+    "type": "blank",
+    "text": "برای اعمال فوری و دستی سیاست‌های Group Policy روی یک کلاینت، دستور ____ را اجرا می‌کنیم.",
+    "acceptedAnswers": [
+      "gpupdate",
+      "gpupdate /force"
+    ],
+    "explanation": "gpupdate فوراً GPOهای جدید را اعمال می‌کند (/force برای اعمال کامل)؛ gpresult هم گزارش GPOهای اعمال‌شده را می‌دهد."
+  },
+  {
+    "id": "mcsa-q9",
+    "path": "mcsa",
+    "type": "blank",
+    "text": "برای بررسی سلامت Domain Controller و فرایند replication، دو ابزار خط فرمان ____ و ____ استفاده می‌شوند.",
+    "acceptedAnswers": [
+      "dcdiag",
+      "repadmin"
+    ],
+    "explanation": "dcdiag مجموعه تست سلامت DC را اجرا می‌کند و repadmin (مثلاً /replsummary) وضعیت تکثیر بین DCها را نشان می‌دهد."
+  },
+  {
+    "id": "mcsa-q10",
+    "path": "mcsa",
+    "type": "blank",
+    "text": "برای فعال‌کردن مدیریت ریموت پاورشل روی سرور ویندوزی، از دستور ____ استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "Enable-PSRemoting",
+      "enable-psremoting"
+    ],
+    "explanation": "Enable-PSRemoting سرویس WinRM و قواعد لازم فایروال را روی مقصد فعال می‌کند؛ سپس از سمت ادمین با Enter-PSSession یا Invoke-Command وصل می‌شویم."
+  },
+  {
+    "id": "mt-q1",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "وقتی IP پیکربندی روتر میکروتیک خراب شده و SSH/Winbox با IP وصل نمی‌شود، چگونه می‌توان دسترسی گرفت؟",
+    "options": [
+      "روتر را فوراً ریست کارخانه کنیم",
+      "با MAC-Winbox از طریق MAC-آدرس اینترفیس در لایه ۲ وصل شویم",
+      "فقط با کابل کنسول سریال",
+      "با WebFig روی پورت 80"
+    ],
+    "correctIndex": 1,
+    "explanation": "Winbox قابلیت اتصال با MAC-آدرس را دارد که از لایه ۲ کار می‌کند و به IP نیاز ندارد؛ نجات‌دهنده کلاسیک پیکربندی‌های خراب شبکه است."
+  },
+  {
+    "id": "mt-q2",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "فایروال RouterOS، ترافیک LAN→WAN در کدام زنجیره (chain) بررسی می‌شود؟",
+    "options": [
+      "input",
+      "forward",
+      "output",
+      "srcnat"
+    ],
+    "correctIndex": 1,
+    "explanation": "input ترافیک مقصد خودِ روتر، forward ترافیک عبوری بین اینترفیس‌ها و output ترافیک خروجی از خود روتر است؛ LAN→WAN عبوری است یعنی forward."
+  },
+  {
+    "id": "mt-q3",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "کدام قاعده باید تقریباً همیشه اولین قاعده زنجیره input باشد؟",
+    "options": [
+      "drop all",
+      "accept برای connection-state=established,related",
+      "reject با پیام",
+      "accept برای همه پورت‌ها"
+    ],
+    "correctIndex": 1,
+    "explanation": "قاعده اول established,related اتصال‌های جاری (مثل جلسه Winbox خودتان) را زنده نگه می‌دارد؛ بدون آن با اعمال قواعد بعدی، خودتان هم قطع می‌شوید."
+  },
+  {
+    "id": "mt-q4",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "فرق masquerade با srcnat چیست؟",
+    "options": [
+      "هیچ فرقی ندارند",
+      "masquerade آدرس خروجی را در لحظه از اینترفیس می‌خواند و برای IP پویا مناسب است؛ srcnat آدرس ثابت می‌خواهد",
+      "masquerade فقط برای سرور است",
+      "srcnat سریع‌تر روی IP پویا است"
+    ],
+    "correctIndex": 1,
+    "explanation": "srcnat نگاشت با IP ثابت تعریف می‌شود؛ masquerade برای IP پویا طراحی شده و هنگام هر اتصال آدرس خروجی اینترفیس را برمی‌دارد."
+  },
+  {
+    "id": "mt-q5",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "در Simple Queue، رفتار Burst چگونه است؟",
+    "options": [
+      "همیشه سرعت را دوبرابر می‌کند",
+      "تا وقتی میانگین مصرف در burst-time از burst-threshold کمتر است، اجازه شتاب تا burst-limit می‌دهد و بعد به max-limit سقوط می‌کند",
+      "سرعت را بعد از یک ساعت کم می‌کند",
+      "فقط برای سرورها کار می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "Burst شتاب کوتاه «اول لینک» می‌دهد: تا میانگین پنجره burst-time از آستانه کمتر است، تا burst-limit اجازه هست؛ با عبور از آستانه، سقف به max-limit برمی‌گردد."
+  },
+  {
+    "id": "mt-q6",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "در PCQ برای عادلانه‌کردن پهنای باند دانلود بین کاربران، کدام classifier درست است؟",
+    "options": [
+      "src-address",
+      "dst-address",
+      "both",
+      "هیچ‌کدام"
+    ],
+    "correctIndex": 1,
+    "explanation": "برای دانلود، ترافیک از مقصدهای متعدد اینترنتی می‌آید و صف‌بندی بر اساس dst-address هر کاربر صف جدا می‌گیرد؛ برای آپلود برعکس، src-address."
+  },
+  {
+    "id": "mt-q7",
+    "path": "mikrotik",
+    "type": "mc",
+    "text": "در باند 2.4GHz چند کانال بدون هم‌پوشانی وجود دارد و کدام‌ها هستند؟",
+    "options": [
+      "۵ کانال؛ 1,3,6,9,11",
+      "۳ کانال؛ 1، 6 و 11",
+      "۱۱ کانال بدون هم‌پوشانی",
+      "۲ کانال؛ 2 و 7"
+    ],
+    "correctIndex": 1,
+    "explanation": "در 2.4GHz فقط کانال‌های 1 (2412)، 6 (2437) و 11 (2462) بدون هم‌پوشانی‌اند؛ انتخاب این سه در APهای همسایه، تداخل را کمینه می‌کند."
+  },
+  {
+    "id": "mt-q8",
+    "path": "mikrotik",
+    "type": "blank",
+    "text": "برای گرفتن پشتیبان متنی و قابل‌مطالعه از پیکربندی روتر میکروتیک، دستور ____ با پارامتر file استفاده می‌شود.",
+    "acceptedAnswers": [
+      "/export",
+      "export"
+    ],
+    "explanation": "/export فایل متنی .rsc می‌سازد که قابل بازخوانی، مقایسه در گیت و بازگردانی جزئی است؛ در برابر /system backup که باینری و وابسته به نسخه/تجهیز است."
+  },
+  {
+    "id": "mt-q9",
+    "path": "mikrotik",
+    "type": "blank",
+    "text": "برای آزمایش پرخطر روی روتر دور از دسترس، حالت ____ را فعال می‌کنیم تا با قطع شدن اتصال، پیکربندی خودکار برگردانده شود.",
+    "acceptedAnswers": [
+      "Safe Mode",
+      "safe mode"
+    ],
+    "explanation": "Safe Mode (Ctrl+X در ترمینال یا دکمه Winbox) تغییرات را شروطی می‌کند: اگر اتصال قطع شود، RouterOS پیکربندیِ انجام‌شده در این حالت را برمی‌گرداند."
+  },
+  {
+    "id": "mt-q10",
+    "path": "mikrotik",
+    "type": "blank",
+    "text": "برای اینکه کاربران وای‌فای مهمان بعد از اتصال، ابتدا صفحه ورود و احراز هویت ببینند، از ویژگی ____ استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "Hotspot",
+      "hotspot"
+    ],
+    "explanation": "Hotspot با صفحه ورود (Captive Portal)، کاربرها و کارت‌های زمانی، اینترنت را مشروط به احراز هویت می‌کند؛ DHCP معمولی چنین لایه‌ای ندارد."
+  },
+  {
+    "id": "ccna-q1",
+    "path": "ccna",
+    "type": "mc",
+    "text": "سوئیچ وقتی مقصد MAC فریم را در جدول MAC پیدا نکند چه می‌کند؟",
+    "options": [
+      "فریم را دور می‌اندازد",
+      "فریم را از همه پورت‌های همان VLAN به‌جز ورودی می‌فرستد (Flood)",
+      "به روتر برمی‌گرداند",
+      "فرستنده را مسدود می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "برای مقصد ناشناخته یا broadcast، سوئیچ فریم را در دامنه همان VLAN flood می‌کند؛ پاسخ مقصد، جدول MAC را تکمیل می‌کند."
+  },
+  {
+    "id": "ccna-q2",
+    "path": "ccna",
+    "type": "mc",
+    "text": "Native VLAN روی trunk چیست و چه خطری دارد؟",
+    "options": [
+      "VLAN ویژه مک؛ خطر ندارد",
+      "تنها VLAN بدون تگ 802.1Q؛ ناهمخوانی آن بین دو سر trunk باعث قاطی‌شدن ترافیک می‌شود",
+      "VLAN مدیریت CISCO؛ همیشه باید 100 باشد",
+      "VLAN مخصوص VoIP"
+    ],
+    "correctIndex": 1,
+    "explanation": "Native VLAN تگ نمی‌گیرد و پیش‌فرض ۱ است؛ اگر دو سر trunk آن را همسان تعریف نکنند، ترافیک untagged بین VLANهای نادرست عبور می‌کند."
+  },
+  {
+    "id": "ccna-q3",
+    "path": "ccna",
+    "type": "mc",
+    "text": "راه سازمانی مسیریابی بین VLANها که گلوگاه Router-on-a-Stick را ندارد چیست؟",
+    "options": [
+      "سوئیچ لایه ۳ با SVI",
+      "Hub",
+      "Bridge",
+      "VLAN خالی"
+    ],
+    "correctIndex": 1,
+    "explanation": "سوئیچ لایه ۳ با ip routing و اینترفیس مجازی SVI برای هر VLAN، گیت‌وی همانجا فراهم می‌کند؛ ترافیک بین VLAN بدون عبور از کابل روتر انجام می‌شود."
+  },
+  {
+    "id": "ccna-q4",
+    "path": "ccna",
+    "type": "mc",
+    "text": "مسیر استاتیک (AD=1) و مسیر OSPF (AD=110) هم‌زمان یک مقصد را اعلام کنند، روتر کدام را انتخاب می‌کند؟",
+    "options": [
+      "OSPF چون داینامیک است",
+      "استاتیک چون Administrative Distance کمتری دارد",
+      "تصادفی",
+      "هر دو را با load balance"
+    ],
+    "correctIndex": 1,
+    "explanation": "وقتی چند منبع یک پیشوند یکسان می‌دهند، AD کمتر برنده است: استاتیک (۱) بر OSPF (۱۱۰) می‌چربد. اگر پیشوندها متفاوت باشند، longest prefix match ملاک است."
+  },
+  {
+    "id": "ccna-q5",
+    "path": "ccna",
+    "type": "mc",
+    "text": "ACL استاندارد را کجا و ACL extended را کجا اعمال می‌کنیم؟",
+    "options": [
+      "استاندارد نزدیک منبع؛ extended نزدیک مقصد",
+      "استاندارد نزدیک مقصد؛ extended نزدیک منبع",
+      "هر دو نزدیک مقصد",
+      "هر دو فقط روی پورت trunk"
+    ],
+    "correctIndex": 1,
+    "explanation": "ACL استاندارد فقط Source را می‌بیند؛ اگر نزدیک منبع ببندید ترافیک سالم را هم می‌کُشد، پس نزدیک مقصد. Extended دقیق است و زود نزدیک منبع بسته می‌شود تا پهنای باند هدر نرود."
+  },
+  {
+    "id": "ccna-q6",
+    "path": "ccna",
+    "type": "mc",
+    "text": "PAT (Overload) چگونه چند ده کلاینت را پشت یک IP عمومی نگه می‌دارد؟",
+    "options": [
+      "با چند IP عمومی",
+      "با تمایز اتصال‌ها بر اساس شماره پورت در جدول ترجمه",
+      "با round-robin بین کاربران",
+      "با مک‌آدرس"
+    ],
+    "correctIndex": 1,
+    "explanation": "PAT برای هر اتصال داخلی یک پورت متفاوت روی IP عمومی می‌گیرد و جدول ترجمه را با پورت متمایز می‌کند؛ همین اینترنت خانه را کار می‌اندازد."
+  },
+  {
+    "id": "ccna-q7",
+    "path": "ccna",
+    "type": "mc",
+    "text": "در Port Security با violation پیش‌فرض (shutdown) وقتی دستگاه ناشناس وصل شود چه می‌شود؟",
+    "options": [
+      "پکت‌ها دور ریخته می‌شوند و همه‌چیز ادامه دارد",
+      "پورت به وضعیت err-disabled می‌رود و باید با shutdown/no shutdown یا errdisable recovery برگردد",
+      "مک‌آدرس خودکار ثبت می‌شود",
+      "فقط یک هشدار ایمیل می‌رود"
+    ],
+    "correctIndex": 1,
+    "explanation": "violations سه حالت دارند: protect بی‌صدا، restrict با لاگ و پیش‌فرض shutdown که پورت را err-disabled می‌کند و بازگشت نیازمند مداخله ادمین یا errdisable recovery است."
+  },
+  {
+    "id": "ccna-q8",
+    "path": "ccna",
+    "type": "blank",
+    "text": "در پیکربندی OSPF سیسکو، به‌جای ساب‌نت ماسک از ____ Mask استفاده می‌شود؛ مثلاً برای 255.255.255.0 مقدار 0.0.0.255.",
+    "acceptedAnswers": [
+      "wildcard",
+      "wildcard mask"
+    ],
+    "explanation": "wildcard mask معکوس ساب‌نت است: 255.255.255.0 → 0.0.0.255 و 255.255.255.252 → 0.0.0.3؛ سؤال همیشگی آزمون 200-301."
+  },
+  {
+    "id": "ccna-q9",
+    "path": "ccna",
+    "type": "blank",
+    "text": "برای اینکه روتر مرزی، مسیر پیش‌فرض را به‌طور خودکار در OSPF توزیع کند، از فرمان ____ در(router-config) استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "default-information originate"
+    ],
+    "explanation": "این فرمان مسیر 0.0.0.0/0 را به‌شکل LSA به همسایه‌ها اعلام می‌کند تا کل ناحیه اینترنت را از طریق مرز بداند."
+  },
+  {
+    "id": "ccna-q10",
+    "path": "ccna",
+    "type": "blank",
+    "text": "در اتوماسیون شبکه، برای خواندن داده از REST API تجهیز از متد HTTP ____ و برای ساخت منبع جدید از متد ____ استفاده می‌شود.",
+    "acceptedAnswers": [
+      "get",
+      "post"
+    ],
+    "explanation": "GET می‌خواند، POST می‌سازد، PUT/PATCH به‌روزرسانی و DELETE حذف می‌کند؛ بدنه درخواست/پاسخ معمولاً JSON است."
+  },
+  {
+    "id": "ps-q1",
+    "path": "powershell",
+    "type": "mc",
+    "text": "بنیادی‌ترین تفاوت پاورشل با CMD چیست؟",
+    "options": [
+      "پاورشل فقط روی ویندوز ۱۱ کار می‌کند",
+      "خروجی پاورشل آبجکت‌های ساخت‌یافته با ویژگی/متد است؛ CMD فقط متن تولید می‌کند",
+      "CMD سریع‌تر است",
+      "پاورشل از پایپ‌لاین پشتیبانی نمی‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "پاورشل شیءگراست: پایپ‌لاین آبجکت کامل منتقل می‌کند و می‌توانید مستقیم روی Status یا CPU فیلتر کنید؛ در CMD باید متن را با ابزارهایی خرد کنید."
+  },
+  {
+    "id": "ps-q2",
+    "path": "powershell",
+    "type": "mc",
+    "text": "قاعده نام‌گذاری Cmdletها چیست و چرا مهم است؟",
+    "options": [
+      "مخفف‌های سه‌حرفی مثل یونیکس؛ برای تایپ سریع",
+      "Verb-Noun؛ چون با دانستن اسم شیء، دستور آن قابل حدس‌زدن و یادگیری قابل پیش‌بینی می‌شود",
+      "عدد-حرف؛ برای مرتب‌سازی",
+      "هر چه سازنده بخواهد"
+    ],
+    "correctIndex": 1,
+    "explanation": "قالب Verb-Noun (مثل Get-Service و Stop-Process) به همراه Get-Command و Get-Verb کشف دستورات را سیستم‌مند می‌کند."
+  },
+  {
+    "id": "ps-q3",
+    "path": "powershell",
+    "type": "mc",
+    "text": "خروجی (Get-Service wuauserv) چه نوع داده‌ای است و چرا Get-Member مهم است؟",
+    "options": [
+      "متن ساده",
+      "آبجکت .NET با ویژگی‌هایی مثل Status و StartType؛ Get-Member همین ساختار را نشان می‌دهد",
+      "عدد",
+      "فایل لاگ"
+    ],
+    "correctIndex": 1,
+    "explanation": "خروجی آبجکت است و Get-Member TypeName و اعضای آن را فهرست می‌کند؛ بدون دیدن اعضا نمی‌دانید در Where-Object روی چه چیزی فیلتر کنید."
+  },
+  {
+    "id": "ps-q4",
+    "path": "powershell",
+    "type": "mc",
+    "text": "سه Cmdlet ستون فقرات فیلتر پایپ‌لاین کدام‌اند؟",
+    "options": [
+      "cd, dir, cls",
+      "Where-Object، Sort-Object و Select-Object",
+      "Get, Set, New",
+      "echo, ping, ipconfig"
+    ],
+    "correctIndex": 1,
+    "explanation": "Where-Object فیلتر می‌کند، Sort-Object مرتب می‌کند و Select-Object ستون/سطر انتخاب می‌کند؛ ترکیب این سه، گزارش‌های پیچیده را می‌سازد."
+  },
+  {
+    "id": "ps-q5",
+    "path": "powershell",
+    "type": "mc",
+    "text": "کدام گزینه درباره Execution Policy درست است؟",
+    "options": [
+      "مرز امنیتی مطلق است و هیچ‌کس نمی‌تواند دورش بزند",
+      "سیاست شروع اسکریپت است نه مرز امنیتی؛ با powershell -ExecutionPolicy Bypass قابل عبور است",
+      "فقط روی سرورها معنا دارد",
+      "رمزهای عبور را مدیریت می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "Execution Policy فقط تصمیم می‌گیرد اسکریپت‌ها به‌طور پیش‌فرض اجرا شوند یا نه و کاربر می‌تواند per-process دورش بزند؛ حفاظ است نه کنترل امنیتی، و RemoteSigned انتخاب متعارف است."
+  },
+  {
+    "id": "ps-q6",
+    "path": "powershell",
+    "type": "mc",
+    "text": "چرا در try/catch باید از -ErrorAction Stop استفاده کنیم؟",
+    "options": [
+      "برای سرعت بیشتر",
+      "چون خطاهای non-terminating به‌طور پیش‌فرض اجرای try را قطع نمی‌کنند و catch فعال نمی‌شود",
+      "چون Stop لاگ می‌نویسد",
+      "چون catch فقط با پارامتر کار می‌کند"
+    ],
+    "correctIndex": 1,
+    "explanation": "پیش‌فرض خطاهای بسیاری از Cmdletها non-terminating است؛ -ErrorAction Stop آن‌ها را terminating می‌کند تا بلوک catch واقعاً فعال شود."
+  },
+  {
+    "id": "ps-q7",
+    "path": "powershell",
+    "type": "mc",
+    "text": "برای اجرای یک فرمان روی بیست سرور به‌طور موازی، بهترین ابزار چیست؟",
+    "options": [
+      "Enter-PSSession بیست بار",
+      "Invoke-Command -ComputerName ... -ScriptBlock { ... }",
+      "RDP روی همه سرورها",
+      "ping همگی"
+    ],
+    "correctIndex": 1,
+    "explanation": "Invoke-Command روی چند سرور موازی اجرا می‌کند و خروجی‌ها با ستون PSComputerName برچسب می‌خورند؛ Enter-PSSession فقط سشن تعاملی تک‌سرور است."
+  },
+  {
+    "id": "ps-q8",
+    "path": "powershell",
+    "type": "blank",
+    "text": "برای فیلتر کردن خروجی Get-Service فقط روی سرویس‌های در حال اجرا، از ____ -Object با شرط Status -eq 'Running' استفاده می‌کنیم.",
+    "acceptedAnswers": [
+      "Where",
+      "Where-Object",
+      "where"
+    ],
+    "explanation": "Where-Object در پایپ‌لاین شرط می‌گذارد؛ نام کوتاه where مجاز است و شرط‌ها با عملگرهای حرفی مثل -eq و -like نوشته می‌شوند."
+  },
+  {
+    "id": "ps-q9",
+    "path": "powershell",
+    "type": "blank",
+    "text": "برای اعتبارسنجی ورودی اجباری در بلوک param، به پارامتر ویژگی [Parameter(____)] می‌دهیم.",
+    "acceptedAnswers": [
+      "Mandatory",
+      "mandatory"
+    ],
+    "explanation": "[Parameter(Mandatory)] اجرای اسکریپت بدون آن پارامتر را متوقف و از کاربر می‌پرسد؛ ValidateSet و ValidateRange هم مقادیر مجاز را محدود می‌کنند."
+  },
+  {
+    "id": "ps-q10",
+    "path": "powershell",
+    "type": "blank",
+    "text": "در DSC، ویژگی ____ هر Resource مشخص می‌کند که عنصر باید وجود داشته باشد یا نباشد (Present/Absent).",
+    "acceptedAnswers": [
+      "Ensure",
+      "ensure"
+    ],
+    "explanation": "Ensure = Present یعنی تضمین وجود (سرویس فعال، فیچر نصب) و Absent یعنی تضمین نبود؛ DSC اعلان‌گرا و idempotent است."
   }
 ]

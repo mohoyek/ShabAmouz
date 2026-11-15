@@ -1,0 +1,97 @@
+---
+slug: mikrotik-firewall-nat
+path: mikrotik
+title: "فایروال و NAT در میکروتیک"
+summary: "سه زنجیره input و forward و output، Connection Tracking، masquerade و dstnat و port forwarding و Address List"
+duration: 15
+order: 2
+---
+
+فایروال، جایی است که میکروتیک از «مودم خانگی» به «روتر حرفه‌ای» تبدیل می‌شود. آزمون MTCNA مدل فیلترپکیج RouterOS را با جزئیات می‌خواهد: زنجیره‌ها، وضعیت اتصال و دو نوع NAT. این درس، فایروال پیش‌فرض را باز می‌کند، می‌سازد و سپس NAT را با سناریوهای واقعی می‌چیند.
+
+## معماری: سه زنجیره و یک قاعده طلایی
+
+پکت‌هایی که از روتر می‌گذرند در سه مسیر بررسی می‌شوند (سؤال پرتکرار: «پکتی که از LAN به اینترنت می‌رود کدام زنجیره را طی می‌کند؟» پاسخ: forward):
+
+- **input:** ترافیکی که مقصدش خودِ روتر است (مدیریت Winbox، SSH، ping به روتر).
+- **forward:** ترافیک عبوری بین اینترفیس‌ها (LAN→WAN، WAN→LAN).
+- **output:** ترافیک خروجی از خود روتر (ping از روتر، آپدیت سیستم).
+
+هر قاعده یک **action** دارد: `accept` (عبور)، `drop` (بی‌صدا رد)، `reject` (رد با پیام) و `log`. قاعده طلایی: **پکت از اولین قاعده منطبق عبور می‌کند و قاعده‌های بعدی دیگر دیده نمی‌شوند** — ترتیب قواعد حیاتی است.
+
+## Connection Tracking: فایروال حالت‌دار
+
+RouterOS همه اتصال‌ها را ردیابی می‌کند (`/ip firewall connection print`) و در قواعد بر اساس وضعیت تصمیم می‌گیرید:
+
+```routeros
+/ip firewall filter
+add chain=input connection-state=established,related action=accept \
+    comment="جواب اتصال‌های خودمان — همیشه قاعده اول"
+add chain=input connection-state=invalid action=drop
+```
+
+چهار حالت کلاسیک که آزمون ازشان می‌پرسد: **new** (اولین پکت اتصال)، **established** (ادامه اتصال موجود)، **related** (اتصال مرتبط جدید مثل FTP data) و **invalid** (بلااستفاده/مخرب).
+
+فایروال حداقلی و امن برای روتر دروازه:
+
+```routeros
+/ip firewall filter
+add chain=input connection-state=established,related action=accept
+add chain=input connection-state=invalid action=drop
+add chain=input in-interface=ether2 action=accept comment="LAN به روتر آزاد"
+add chain=input in-interface=ether1 protocol=icmp action=accept comment="ping به روتر از بیرون"
+add chain=input in-interface=ether1 action=drop comment="بقیه بیرون: بسته!"
+add chain=forward connection-state=established,related action=accept
+add chain=forward connection-state=invalid action=drop
+add chain=forward in-interface=ether1 action=drop comment="شروع اتصال از بیرون ممنوع"
+```
+
+**Address List** ابزار حرفه‌ای گروه‌بندی IPهاست:
+
+```routeros
+/ip firewall address-list
+add list=blocked address=203.0.113.0/24
+add list=office-vpn address=10.8.0.0/24
+/ip firewall filter
+add chain=input src-address-list=blocked action=drop comment="مهاجمان شناخته‌شده"
+```
+
+باز کردن پورت مدیریتی فقط برای دفتر: `add chain=input protocol=tcp dst-port=8291 src-address-list=office-vpn action=accept` — و هیچ‌وقت Winbox (8291) را روی WAN عمومی باز نکنید.
+
+## NAT: دو نوع، دو دنیا
+
+**۱) srcnat / masquerade — شبکه داخلی از پشت IP عمومی بیرون می‌رود:**
+
+```routeros
+/ip firewall nat
+add chain=srcnat out-interface=ether1 action=masquerade comment="اینترنت برای LAN"
+```
+
+تفاوت masquerade و srcnat (سؤال محبوب آزمون): srcnat آدرس ثابت می‌خواهد و جدول ترجمه را نگه می‌دارد؛ **masquerade** آدرس خروجی را هنگام هر اتصال از اینترفیس می‌خواند — برای IP پویا ساخته شده و کمی کندتر است.
+
+**۲) dstnat — خدمت‌دهی به داخل:**
+
+```routeros
+# دوربین داخلی 192.168.10.50 از بیرون روی پورت 8080
+add chain=dstnat in-interface=ether1 protocol=tcp dst-port=8080 \
+    action=dst-nat to-addresses=192.168.10.50 to-ports=80
+
+# سرور وب داخلی: همه پورت ۸۰ خارجی به داخل
+add chain=dstnat in-interface=ether1 protocol=tcp dst-port=80 \
+    action=dst-nat to-addresses=192.168.10.20
+```
+
+دقت کنید: برای این که dstnat واقعاً به سرور برسد، قاعده forward مرتبط باید اجازه بدهد (`connection-state=new` از WAN به آن سرور خاص). دو ابزار کمکی عیب‌یابی: **Torch** (دیدن زنده ترافیک اینترفیس) و `packet sniffer` برای گرفتن پکت.
+
+- **Hairpin NAT:** وقتی کاربر داخل شبکه با آدرس عمومی به سرور داخل وصل می‌شود، قاعده dstnat دوم با `srcnat` داخل شبکه لازم است — سناریوی معروف «کار می‌کرد بیرون، داخل نه».
+- **ترتیب قواعد NAT:** قواعد dstnat قبل از فایروال forward اجرا می‌شوند؛ پس در فایروال، آدرس «واقعی داخلی» را می‌بینید نه IP عمومی.
+
+## جمع‌بندی
+
+- سه زنجیره: input برای خود روتر، forward برای ترافیک عبوری و output برای خروجی روتر؛ اولین تطابق برنده است.
+- فایروال حالت‌دار با connection-state: قاعده اول همیشه established,related و بعد invalid.
+- سیاست درست: input از WAN بسته (جزicmp) و Winbox هرگز روی اینترنت عمومی باز نمی‌شود.
+- masquerade برای IP پویا و srcnat برای IP ثابت؛ dstnat و port forwarding خدمت‌دهی به داخل است.
+- Address List نگهداری گروهی IPها و نسخه حرفه‌ای قواعد است؛ hairpin سناریوی کلاسیک عیب‌یابی است.
+
+برای تمرین: فایروال حداقلی این درس را روی CHR ببندید، یک masquerade و یک dstnat به سمت وب‌سرور داخلی اضافه کنید و از بیرون (LAN دوم) تست بگیرید. بعد با Torch ببینید پکت‌ها کدام قاعده را می‌گیرند — دیدن «اولین تطابق» با چشم، مفهوم را ماندگار می‌کند.

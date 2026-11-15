@@ -1,0 +1,136 @@
+---
+slug: powershell-scripting
+path: powershell
+title: "اسکریپت‌نویسی پاورشل"
+summary: "پارامتر و Param، شرط‌ها و حلقه‌ها، توابع و خطاگیری با try/catch، ماژول‌ها و یک اسکریپت گزارش دیسک کامل"
+duration: 15
+order: 2
+---
+
+وقتی یک پایپ‌لاین یک‌خطی را دوبار لازم دارید، وقت اسکریپت است. این درس شما را از کاربر پاورشل به نویسنده پاورشل تبدیل می‌کند: ساختار اسکریپت استاندارد، پارامترها، شرط و حلقه، توابع و خطاگیری — و در انتها یک اسکریپت واقعی که گزارش فضای دیسک می‌سازد.
+
+## اسکریپت و پارامتر
+
+اسکریپت فایل `.ps1` است؛ ساختار حرفه‌ای آن از **Comment-Based Help** و بلوک `param` شروع می‌شود:
+
+```powershell
+<#
+.SYNOPSIS
+    گزارش فضای دیسک سرورها
+.DESCRIPTION
+    برای هر درایو لوژیکال، درصد فضای آزاد را محاسبه و خروجی CSV می‌دهد.
+.EXAMPLE
+    .\Get-DiskReport.ps1 -Threshold 20 -Path .\report.csv
+#>
+param(
+    [Parameter(Mandatory)]
+    [string]$ComputerName,
+
+    [ValidateRange(1, 90)]
+    [int]$Threshold = 15,
+
+    [string]$Path = ".\report.csv"
+)
+```
+
+- **[Parameter(Mandatory)]** پارامتر را اجباری می‌کند؛ بدون آن اجرا با پرسش متوقف می‌شود.
+- **ValidateRange و ValidateSet** اعتبارسنجی ورودی را از مسئولیت شما برمی‌دارد: `[ValidateSet('Local','Remote')]`.
+- اجرا با `.\Get-DiskReport.ps1 -ComputerName SRV01 -Threshold 20`.
+
+**نکته آزمون/مصاحبه:** `$args` متغیر پارامترهای بدون تعریف است ولی اسکریپت حرفه‌ای همیشه `param` رسمی دارد.
+
+## شرط و حلقه
+
+```powershell
+# شرط
+if ($freePercent -lt $Threshold) {
+    Write-Warning "درایو C: بحرانی است ($freePercent٪)"
+} elseif ($freePercent -lt 30) {
+    Write-Output "هشدار ملایم"
+} else {
+    Write-Output "سالم"
+}
+
+# switch — خواناتر از زنجیره if
+switch ($status) {
+    'Running' { "فعال" }
+    'Stopped' { "متوقف" }
+    default   { "نامشخص" }
+}
+
+# سه حلقه کاربردی
+foreach ($svc in Get-Service) { if ($svc.Status -eq 'Running') { $svc.Name } }
+
+for ($i = 1; $i -le 5; $i++) { "مرتبه $i" }
+
+1..3 | ForEach-Object { "خط $_" }    # ForEach-Object در پایپ‌لاین
+```
+
+قاعده انتخاب (سؤال متداول): در پایپ‌لاین روی جریان داده از `ForEach-Object` استفاده کنید و برای پیمایش آرایه در حافظه از `foreach`. و فراموش نکنید عملگرها حرفی‌اند: `-and`، `-or`، `-not` کنار `-eq`/`-gt`.
+
+## توابع و خروجی استاندارد
+
+```powershell
+function Get-DiskHealth {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)]
+        [string[]]$ComputerName = $env:COMPUTERNAME
+    )
+    process {
+        foreach ($c in $ComputerName) {
+            $disk = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ComputerName $c
+            foreach ($d in $disk) {
+                [PSCustomObject]@{
+                    Server   = $c
+                    Drive    = $d.DeviceID
+                    FreeGB   = [math]::Round($d.FreeSpace / 1GB, 2)
+                    TotalGB  = [math]::Round($d.Size / 1GB, 2)
+                }
+            }
+        }
+    }
+}
+```
+
+سه قاعده حرفه‌ای این قطعه:
+
+- **[PSCustomObject]** خروجی ساختاریافته می‌سازد که پایپ‌لاین دوست است — هرگز رشته چاپ نکنید؛ آبجکت بدهید.
+- **Write-Output برای داده و Write-Host فقط برای UI** (رنگ و پیشرفت) — تمایز سؤال محبوب آزمون.
+- **[CmdletBinding()] + ValueFromPipeline** تابع شما را مثل Cmdlet واقعی با -Verbose و پایپ‌لاین می‌کند.
+
+## خطاگیری: try/catch
+
+```powershell
+try {
+    Get-Service -ComputerName $c -ErrorAction Stop
+} catch {
+    Write-Error "اتصال به $c شکست خورد: $($_.Exception.Message)"
+    # ادامه بده یا exit 1
+} finally {
+    Write-Verbose "اتمام بررسی $c"    # همیشه اجرا می‌شود
+}
+```
+
+دو نکته که آزمون و تجربه هر دو تأکید دارند: Cmdletها به‌طور پیش‌فرض خطای non-terminating دارند و try/catch را فعال نمی‌کنند — پس در try از **`-ErrorAction Stop`** استفاده کنید. و `$_` در catch، شیء خطای جاری است.
+
+## ماژول‌ها و پروفایل
+
+```powershell
+Get-Module -ListAvailable          # ماژول‌های نصب‌شده
+Import-Module ActiveDirectory      # بارگذاری صریح
+Find-Module PSReadLine | Install-Module    # از PowerShell Gallery
+$PROFILE                            # اسکریپت راه‌اندازی هر سشن — aliasهای خودتان اینجا
+```
+
+ماژول = بسته توابع. ماژول‌های رسمی ویندوز (ActiveDirectory، DnsServer، NetAdapter) از RSAT می‌آیند و همان چیزی‌اند که در درس بعد برای مدیریت اکتیو دایرکتوری استفاده می‌کنیم.
+
+## جمع‌بندی
+
+- اسکریپت حرفه‌ای با Comment-Based Help و param شروع می‌شود؛ Mandatory و ValidateSet اعتبارسنجی را می‌سازند.
+- if/switch و foreach/for/ForEach-Object را با عملگرهای حرفی ترکیب کنید؛ پایپ‌لاین یعنی ForEach-Object.
+- خروجی استاندارد = [PSCustomObject] و Write-Output؛ Write-Host فقط برای رابط کاربری.
+- try/catch فقط با -ErrorAction Stop واقعاً می‌گیرد و finally همیشه اجرا می‌شود.
+- ماژول‌ها بسته توابع‌اند؛ Find-Module/Install-Module از Gallery و Import-Module برای بارگذاری.
+
+برای تمرین: تابع Get-DiskHealth این درس را در یک فایل ماژول‌گونه بگذارید، برای دو کامپیوتر (لوکال و VM) اجرا کنید و خروجی را با `Export-Csv` و بعد `Import-Csv` بچرخانید. همین اسکریپت، نمونه کار پرتابل شما برای مصاحبه ادمینی است.

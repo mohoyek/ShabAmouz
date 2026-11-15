@@ -69,7 +69,7 @@
               "note": "گزینه اقتصادی و سریع برای ورود به بازار کار با تجهیزات MikroTik"
             }
           ],
-          "relatedPathIds": ["network-basics", "cmd-basics", "git-basics"]
+          "relatedPathIds": ["network-basics", "cmd-basics", "git-basics", "ccna", "mikrotik"]
         },
         {
           "id": "specialist",
@@ -142,7 +142,7 @@
               "note": "معادل سطح Expert در اکوسیستم Juniper برای شبکه سازمانی"
             }
           ],
-          "relatedPathIds": ["network-manager"]
+          "relatedPathIds": ["network-manager", "mcsa", "linux-lpic1"]
         }
       ]
     },
@@ -186,7 +186,7 @@
               "note": "اختیاری؛ پوشش عمیق‌تر مدیریت سیستم لینوکسی به‌شکل بی‌طرف از سازنده"
             }
           ],
-          "relatedPathIds": ["network-basics", "cmd-basics", "git-basics"]
+          "relatedPathIds": ["network-basics", "cmd-basics", "git-basics", "linux-lpic1"]
         },
         {
           "id": "devops-apprentice",
@@ -220,7 +220,7 @@
               "note": "پایه همکاری و اتوماسیون با GitHub؛ مکمل طبیعی مسیر گیت"
             }
           ],
-          "relatedPathIds": ["cmd-basics", "git-basics"]
+          "relatedPathIds": ["cmd-basics", "git-basics", "linux-lpic1", "powershell"]
         },
         {
           "id": "devops-engineer",
@@ -254,7 +254,7 @@
               "note": "مدرک DevOps سطح Professional در اکوسیستم ابری که انتخاب کرده‌اید"
             }
           ],
-          "relatedPathIds": ["devops-engineer"]
+          "relatedPathIds": ["devops-engineer", "linux-lpic2"]
         },
         {
           "id": "devops-architect",
@@ -288,7 +288,7 @@
               "note": "زبان مشترک مدیریت سرویس با تیم‌های عملیات و سازمان"
             }
           ],
-          "relatedPathIds": ["devops-architect"]
+          "relatedPathIds": ["devops-architect", "linux-lpic3"]
         }
       ]
     }

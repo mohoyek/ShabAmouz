@@ -1,0 +1,121 @@
+---
+slug: services-security
+path: linux-lpic2
+title: "وب‌سرور، DNS و امنیت سیستم"
+summary: "Apache و nginx با TLS، پیکربندی BIND، فایروال nftables و firewalld، PAM و خودکارسازی زمان‌بندی با cron"
+duration: 15
+order: 3
+---
+
+ادمین حرفه‌ای لینوکس کسی است که سرویس‌ها را «تحویل می‌دهد»: یک سایت روی وب‌سرور، یک DNS داخلی و همه این‌ها پشت فایروال بسته. آزمون 202 مؤسسه LPI دقیقاً همین‌ها را می‌سنجد. در این درس سه سرویس کلیدی را کانفیگ می‌کنیم و در انتها با PAM و سیاست‌های امنیتی، سیستم را از داخل قفل می‌کنیم.
+
+## وب‌سرور: nginx و Apache
+
+هر دو غول وب‌اند ولی کاربردشان فرق دارد: nginx رویدادگرا (event-driven) است و برای ایستاها و Proxy معکوس عالی؛ Apache ماژولار است و `.htaccess` دارد. در یک سرویس واقعی معمولاً nginx جلوتر (reverse proxy و TLS) و Apache پشت‌تر است.
+
+```nginx
+# /etc/nginx/sites-available/app.conf — سایت + TLS
+server {
+    listen 443 ssl;
+    server_name app.example.com;
+    ssl_certificate     /etc/ssl/certs/app.crt;
+    ssl_certificate_key /etc/ssl/private/app.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;   # واگذاری به اپلیکیشن
+        proxy_set_header Host $host;
+    }
+}
+```
+
+```bash
+sudo nginx -t                     # تست کانفیگ قبل از reload — عادت حرفه‌ای‌ها
+sudo systemctl reload nginx
+```
+
+در Apache فایل‌های پیکربندی `VirtualHost` دارند: `<VirtualHost *:80> ServerName app.example.com DocumentRoot /var/www/app </VirtualHost>` و فعال‌سازی سایت با `a2ensite` و ماژول با `a2enmod` (مختص دبیان). سؤال آزمون: تفاوت `DocumentRoot`، دستور `Listen` و مفهوم VirtualHost مبتنی بر نام (Name-based).
+
+## DNS داخلی با BIND
+
+BIND استاندارد سرور DNS است. نقش‌های اصلی: **Recursive/Caching** (پاسخ از دی‌ان‌اس‌های بالادست برای شبکه داخلی) و **Authoritative** (مالک یک zone). فایل‌های کلیدی:
+
+```
+/etc/named.conf        (RHEL) یا /etc/bind/named.conf.options (دبیان)
+```
+
+zone ساده برای دامنه داخلی:
+
+```dns
+; /var/named/example.com.zone
+$TTL 86400
+@    IN  SOA  ns1.example.com. admin.example.com. (
+         2026010101 ; Serial — هر تغییر یک واحد بزن!
+         3600 900 1209600 3600 )
+@       IN  NS    ns1.example.com.
+ns1     IN  A     192.168.1.10
+www     IN  A     192.168.1.20
+mail    IN  A     192.168.1.30
+@       IN  MX 10 mail.example.com.
+app     IN  CNAME www
+```
+
+- **رکوردهای پرتکرار آزمون:** A (نام→IP)، AAAA (نسخه 6)، CNAME (نام→نام)، MX (پست) و PTR (معکوس، در zone با نام `1.168.192.in-addr.arpa`).
+- **عدد Serial** باید با هر تغییر افزایش یابد وگرنه سرورهای ثانویه تغییر را sync نمی‌کنند — سؤال محبوب آزمون!
+- تست با `dig @127.0.0.1 www.example.com` و `rndc reload` برای بارگذاری مجدد zone.
+
+## فایروال: firewalld و nftables
+
+لینوکس مدرن دو لایه دارد: هسته با **netfilter/nftables** و رابط‌های مدیریتی بالای آن (firewalld در RHEL، ufw در Ubuntu). مفاهیم بنیادی که آزمون می‌خواهد: قاعده (rule)، زنجیره (chain: input/output/forward) و وضعیت اتصال (state).
+
+```bash
+# firewalld — منطق zone و service
+sudo firewall-cmd --get-active-zones
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload          # بدون ری‌استارت سرویس
+```
+
+```bash
+# nftables — مستقیم و مدرن
+sudo nft add table inet filter
+sudo nft add chain inet filter input { type filter hook input priority 0 \; policy drop \; }
+sudo nft add rule inet filter input ct state established,related accept
+sudo nft add rule inet filter input tcp dport {22, 443} accept
+sudo nft list ruleset
+```
+
+منطق امن فایروال: **پیش‌فرض همه‌چیز بسته (policy drop) و باز کردن فقط لازم‌ها**. قاعده `ct state established,related accept` همیشگی است — جواب‌های اتصال‌های خودمان را برمی‌گرداند، وگرنه خروجی‌ها هم قفل می‌شوند.
+
+## PAM، به‌روزرسانی و cron
+
+**PAM** (Pluggable Authentication Modules) لایه احراز هویت هر برنامه است: هر سرویس (`/etc/pam.d/sshd` و…) تعیین می‌کند چه ماژول‌هایی اجرا شوند. دو کاربرد مشهور: محدود کردن تلاش ناموفق با `pam_faillock` و محدودیت منابع/سناریوهای ورود. قواعد هر خط چهار جزء دارد: `type control module arguments`.
+
+امنیت پایه‌ای که آزمون و واقعیت هر دو می‌خواهند:
+
+```bash
+sudo apt update && sudo apt upgrade        # دبیان/اوبونتو
+sudo dnf upgrade                            # RHEL/Rocky
+sudo dnf update --security                  # فقط وصله‌های امنیتی
+```
+
+**زمان‌بندی کارها با cron** — به‌روزرسانی خودکار و بکاپ شبانه اینجا تعریف می‌شوند:
+
+```bash
+crontab -e               # ویرایش کرون کاربر جاری
+# m  h  dom mon dow  command
+0  2  *   *   *    /usr/local/bin/backup.sh     # هر روز ساعت ۲ بامداد
+*/15 * * * *      /usr/local/bin/check.sh       # هر ۱۵ دقیقه
+sudo systemctl status cron    # سرویس کرون زنده است؟
+```
+
+پنج فیلد: دقیقه، ساعت، روز ماه، ماه، روز هفته؛ `*/15` یعنی هر ۱۵ واحد. سؤال آزمون اغلب یک رشته cron می‌دهد و می‌خواهد بدانید چه زمانی اجرا می‌شود.
+
+## جمع‌بندی
+
+- nginx رویدادگرا و مناسب reverse proxy/TLS و Apache ماژولار؛ همیشه قبل از reload با `nginx -t` تست کنید.
+- BIND با zone و رکوردهای A/AAAA/CNAME/MX/PTR کار می‌کند؛ Serial باید با هر تغییر بالا برود.
+- فایروال مدرن: firewalld با zone و service یا nftables مستقیم؛ سیاست درست، پیش‌فرض بسته و باز کردن فقط پورت‌های لازم.
+- PAM لایه احراز هویت است و پیکربندی هر سرویس در `/etc/pam.d/`؛ وصله‌های امنیتی را منظم اعمال کنید.
+- cron با پنج فیلد زمان‌بندی می‌کند؛ برای هر ادمین، بکاپ و به‌روزرسانی خودکار اینجا زندگی می‌کنند.
+
+برای تمرین: روی یک سرور مجازی nginx با یک صفحه ساده راه بیندازید، گواهی self-signed بسازید و TLS فعال کنید، فایروال را طوری ببندید که فقط 22 و 443 باز بماند و یک cron برای چک‌کردن وضعیت سرویس بنویسید. همین سه‌تایی، ستون فقرات سرویس‌دهی لینوکس است.

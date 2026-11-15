@@ -1,0 +1,112 @@
+---
+slug: switching-vlan
+path: ccna
+title: "سوئیچینگ، VLAN و Trunk"
+summary: "کار سوئیچ و جدول MAC، ساخت VLAN و Trunk با 802.1Q، مسیریابی بین VLANها و مرور STP و عیب‌یابی استاندارد"
+duration: 15
+order: 1
+---
+
+CCNA (آزمون 200-301 سیسکو) مدرکی است که آگهی‌های استخدام شبکه با آن فیلتر می‌کنند و هسته‌اش دو موضوع است: سوئیچینگ و مسیریابی. این درس لایه ۲ را کامل می‌کند: سوئیچ چطور تصمیم می‌گیرد، VLAN چه مشکلی را حل می‌کند و ترافیک بین VLANها چطور عبور می‌کند.
+
+## سوئیچ چطور کار می‌کند؟
+
+سوئیچ لایه ۲ است و تصمیمش بر پایه **MAC** است. سه رفتار پایه:
+
+1. **یادگیری:** مک‌آدرس فرستنده هر فریم را با پورت ورودی در **CAM Table** (MAC Address Table) ثبت می‌کند.
+2. **فوروارد:** اگر مقصد در جدول هست، فریم فقط از پورت مقصد بیرون می‌رود (unicast).
+3. **Flood:** اگر مقصد ناشناخته یا broadcast است، از همه پورت‌های همان VLAN (به‌جز ورودی) می‌رود.
+
+```cisco
+Switch# show mac address-table          ! جدول مک
+Switch# show interfaces status          ! وضعیت پورت‌ها: speed، duplex، vlan
+Switch# show version
+```
+
+پورت‌های access و trunk دو نقش متفاوت دارند (سؤال پایه آزمون): **access** به یک دستگاه نهایی وصل است و فقط VLAN خودش را می‌فهمد؛ **trunk** بین دو سوئیچ/روتر است و ترافیک چند VLAN را با تگ حمل می‌کند.
+
+## VLAN: شبکه‌های مجازی روی یک سیم
+
+بدون VLAN، یک سوئیچ = یک broadcast domain. با VLAN، سوئیچ یک بسته به چند شبکه منطقی تقسیم می‌شود: بخش مالی در VLAN 10 و بخش فنی در VLAN 20 حتی اگر به سوئیچ واحد وصل باشند، همدیگر را در لایه ۲ نمی‌بینند. سه مزیت که آزمون می‌خواهد: کاهش broadcast، امنیت/تفکیک و سازمان‌دهی بر اساس نقش نه محل.
+
+```cisco
+Switch(config)# vlan 10
+Switch(config-vlan)# name SALES
+Switch(config)# vlan 20
+Switch(config-vlan)# name IT
+
+Switch(config)# interface FastEthernet0/5
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+
+! Trunk بین دو سوئیچ
+Switch(config)# interface GigabitEthernet0/1
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# switchport trunk allowed vlan 10,20
+```
+
+- **IEEE 802.1Q** استاندارد تگ‌گذاری است: ۴ بایت داخل فریم با VLAN ID دوازده‌بیتی (تا 4094).
+- **Native VLAN:** تنها VLAN بدون تگ روی trunk (پیش‌فرض 1). **دو سر trunk باید Native VLAN یکسان داشته باشند** وگرنه ترافیک قاطی و پیام CDP mismatch می‌دهد — سؤال کلاسیک آزمون و کلاسیک واقعیت.
+- **VLAN 1** پیش‌فرض همه‌جا است و به‌عنوان مدیریت، امن‌ترین است که استفاده ترافیکی از آن نکنید.
+
+## عبور بین VLANها: Inter-VLAN Routing
+
+VLANها در لایه ۲ ایزوله‌اند؛ برای حرف‌زدن با هم به مسیریابی نیاز دارند. دو راه استاندارد:
+
+**۱) Router-on-a-Stick** — یک پورت روتر با ساب‌اینترفیس‌ها:
+
+```cisco
+Router(config)# interface GigabitEthernet0/0.10
+Router(config-subif)# encapsulation dot1Q 10
+Router(config-subif)# ip address 192.168.10.1 255.255.255.0
+Router(config)# interface GigabitEthernet0/0.20
+Router(config-subif)# encapsulation dot1Q 20
+Router(config-subif)# ip address 192.168.20.1 255.255.255.0
+```
+
+**۲) L3 Switch (SVI)** — راه سازمانی:
+
+```cisco
+SW1(config)# ip routing
+SW1(config)# interface vlan 10
+SW1(config-if)# ip address 192.168.10.1 255.255.255.0
+SW1(config)# interface vlan 20
+SW1(config-if)# ip address 192.168.20.1 255.255.255.0
+```
+
+SVI یعنی گیت‌وی هر VLAN همان سوئیچ است؛ سیم اضافه و گلوگاه روتر منتفی است. **گیت‌وی پیش‌فرض هر کلاینت همیشه آی‌پی SVI/ساب‌اینترفیس VLAN خودش است** — اگر کلاینت «شبکه خودش را می‌بیند ولی اینترنت/بخش دیگر را نه»، اول گیت‌وی و بعد مسیریابی را چک کنید.
+
+## STP در یک نگاه
+
+سوئیچ‌های به‌هم‌وصل حلقه می‌سازند و حلقه در لایه ۲ یعنی broadcast storm. **STP (802.1D)** این را با مسدود کردن پورت‌های زائد حل می‌کند: **Root Bridge** (کمترین Bridge Priority/MAC) انتخاب می‌شود و بقیه با محاسبه هزینه مسیر، پورت‌های Root/Designated را نگه می‌دارند و پورت‌های زائد را Blocking.
+
+```cisco
+SW1# show spanning-tree
+SW1(config)# spanning-tree vlan 10 root primary
+```
+
+نسخه‌های مدرن: **PVST+** (درخت جدا برای هر VLAN)، **Rapid STP/Rapid PVST+** (همگرایی سریع) و **MST**. برای CCNA کافی است بفهمید STP چه می‌کند، Root چطور انتخاب می‌شود و `show spanning-tree` چه می‌گوید.
+
+## عیب‌یابی استاندارد لایه ۲
+
+زنجیره‌ای که در آزمون عملی و واقعیت یکی است:
+
+```cisco
+show vlan brief                 ! پورت در VLAN درست است؟
+show interfaces trunk           ! trunk فعال و VLANهای مجاز و native؟
+show interfaces status          ! err-disabled؟ speed/duplex ناهمخوان؟
+show mac address-table          ! مک مقصد از کدام پورت می‌آید؟
+show spanning-tree              ! کدام پورت blocking است؟
+```
+
+۴۰٪ باگ‌های «شبکه قطع شد» یکی از این چهار مورد است: پورت در VLAN اشتباه، native VLAN ناهمخوان، VLAN مجاز در trunk نشده و duplex mismatch.
+
+## جمع‌بندی
+
+- سوئیچ مک‌آدرس‌ها را یاد می‌گیرد و فقط برای مقصد ناشناخته flood می‌کند؛ جدول MAC با `show mac address-table`.
+- VLAN broadcast domain را کوچک و شبکه را امن/سازمان‌دهی می‌کند؛ access برای نهایی‌ها و trunk با 802.1Q برای بین سوئیچ.
+- Native VLAN بدون تگ است و باید دو سر trunk یکی باشد؛ VLAN 1 را ترافیک نمی‌دهیم.
+- Inter-VLAN با Router-on-a-Stick یا SVI روی L3 Switch؛ گیت‌وی کلاینت، SVIِ VLAN خودش است.
+- STP حلقه‌ها را با مسدودسازی پورت زائد می‌شکند و Root Bridge با کمترین Priority انتخاب می‌شود.
+
+برای تمرین: در Packet Tracer سه سوئیچ و یک L3 Switch بچینید، دو VLAN بسازید، trunk ببندید و SVIها را راه بیندازید؛ سپس عمداً native VLAN را در یک سر trunk عوض کنید و پیام‌ها را ببینید. این سناریو، سؤال عملی‌ترین بخش آزمون CCNA است.

@@ -1,10 +1,17 @@
 import {
+  AppWindow,
   Building2,
+  Cable,
   Container,
   GitBranch,
+  HardDrive,
   Network,
   Router,
+  Server,
+  SquareTerminal,
+  Terminal,
   TerminalSquare,
+  Wifi,
   Workflow,
   type LucideIcon,
 } from "lucide-react";
@@ -21,6 +28,13 @@ const ICONS: Record<string, LucideIcon> = {
   Building2,
   Container,
   Workflow,
+  Terminal,
+  HardDrive,
+  Server,
+  AppWindow,
+  Wifi,
+  Cable,
+  SquareTerminal,
 };
 
 export function PathIcon({ name, className }: { name: string; className?: string }) {

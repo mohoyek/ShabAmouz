@@ -1,0 +1,83 @@
+---
+slug: powershell-start
+path: powershell
+title: "شروع با پاورشل و Cmdletها"
+summary: "پاورشل در برابر CMD، Verb-Noun و Cmdletها، Get-Help و Get-Command و Get-Member، پایپ‌لاین شیءگرا و Execution Policy"
+duration: 14
+order: 1
+---
+
+CMD ابزار دهه ۸۰ است؛ **پاورشل** جواب مایکروسافت به نیاز مدرن اتوماسیون است: یک پوسته شیءگرا که همه‌چیز ویندوز — سرویس‌ها، کاربران، شبکه، ابر — را از یک زبان مدیریت می‌کند. برای ادمین ویندوز، یادگیری پاورشل همان‌قدر اجباری است که برای ادمین لینوکس یادگیری Bash (و در مسیر DevOps، دقیقاً همین‌جای Bash را پر می‌کند).
+
+## پاورشل چیست و چه فرقی با CMD دارد؟
+
+دو تفاوت بنیادی که سؤال هر مصاحبه است:
+
+- **CMD متن می‌فرستد، پاورشل شیء:** خروجی CMD رشته متنی است که با findstr باید «خُرد» شود؛ خروجی پاورشل آبجکت‌های.NET واقعی است با ویژگی (Property) و متد — می‌توانید مستقیم روی آن فیلتر و مرتب‌سازی کنید.
+- **CMD یک پوسته است، پاورشل یک پلتفرم:** پاورشل خودش زبان اسکریپت کامل + ابزار مدیریتی (نصب در لینوکس و مک هم دارد) است.
+
+دو نسخه مهم: **Windows PowerShell 5.1** (توکار ویندوز، فرمان `powershell`) و **PowerShell 7** (کراس‌پلتفرم و مدرن، فرمان `pwsh`). برای کار جدید، ۷ را نصب کنید؛ محیط ISE قدیمی جای خود را به **VS Code + افزونه PowerShell** داده است.
+
+## Cmdlet و قاعده Verb-Noun
+
+دستورات پاورشل **Cmdlet** نام دارند و همیشه قالب `Verb-Noun` دارند:
+
+```powershell
+Get-Service          # همه سرویس‌ها
+Get-Process          # همه فرآیندها
+Get-ChildItem        # فهرست فایل‌ها (معادل dir/ls)
+Start-Service wuauserv
+Stop-Process -Name notepad
+Set-Location C:\Windows      # معادل cd
+New-Item -ItemType Directory -Path C:\Temp\Reports
+```
+
+فهرست رسمی افعال: `Get-Verb` (Approved Verbs). این قاعده یعنی یادگیری قابل پیش‌بینی: اسم هر چیز را می‌دانید → Get-آن‌چیز را حدس می‌زنید. سه Cmdlet برای «خودآموزی» قلب آزمون و عادت حرفه‌ای‌اند:
+
+```powershell
+Get-Help Get-Service -Examples    # راهنما + مثال‌ها (Update-Help اول اجرا کنید)
+Get-Command *firewall*            # چه Cmdletهایی درباره فایروال هست؟
+Get-Member                        # خروجی این دستور چه ویژگی‌هایی دارد؟
+```
+
+**Get-Member** کلید شیءگرایی است: `(Get-Service | Get-Member)` نشان می‌دهد هر سرویس TypeName و ویژگی‌هایی مثل Status و StartType دارد — و همین‌ها در فیلتر بعدی استفاده می‌شوند.
+
+## پایپ‌لاین شیءگرا
+
+`|` در پاورشل آبجکت کامل منتقل می‌کند نه متن؛ برای همین فیلترها تمیزند:
+
+```powershell
+Get-Service | Where-Object Status -eq 'Running'
+Get-Process | Sort-Object CPU -Descending | Select-Object -First 5 Name, CPU
+Get-Service | Where-Object StartType -eq 'Automatic' |
+    Where-Object Status -ne 'Running' | Select-Object Name, DisplayName
+```
+
+سه Cmdlet پایپ‌لاینی که باید در خواب بلد باشید: **Where-Object** (فیلتر)، **Sort-Object** (مرتب‌سازی) و **Select-Object** (انتخاب ستون/سطر). معادل‌های کوتاه‌نوشت: `where`، `sort`، `select` و `%` برای ForEach-Object.
+
+**متغیرها و مقایسه‌ها** سینتکس خاص دارند: `$name = "SRV01"`؛ عملگرها با حروف‌اند: `-eq`، `-ne`، `-gt`، `-lt`، `-like` (با wildcard) و `-match` (با regex). خروجی همیشه می‌شود در `$result` نگه داشت و دوباره استفاده کرد.
+
+## Execution Policy و امنیت اجرا
+
+اسکریپت‌های ps1 به‌طور پیش‌فرض روی کلاینت‌ها اجرا نمی‌شوند؛ سیاست اجرا (Execution Policy) چهار سطح اصلی دارد:
+
+```powershell
+Get-ExecutionPolicy -List
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser    # توصیه متعارف
+```
+
+- **Restricted:** هیچ اسکریپتی (پیش‌فرض کلاینت ویندوز).
+- **RemoteSigned:** اسکریپت محلی آزاد؛ دانلودی باید امضا باشد (توصیه رایج).
+- **AllSigned و Unrestricted:** سخت‌گیرانه و آزادانه مطلق.
+
+سؤال کلاسیک: «فایل دانلودی حتی با RemoteSigned اجرا نمی‌شود» — پاسخ: بلاک NTFS (Unblock-File یا خصوصیات فایل). و اهمیت امنیتی: این سیاست **حفاظ است نه مرز امنیتی**؛ با `powershell -ExecutionPolicy Bypass -File x.ps1` دورش می‌زنند، آزمون همین تمایز را می‌خواهد.
+
+## جمع‌بندی
+
+- پاورشل شیءگراست: خروجی آبجکت با ویژگی/متد، نه متن خام مثل CMD؛ نسخه مدرن pwsh 7 کراس‌پلتفرم است.
+- قالب Cmdletها Verb-Noun است و سه ابزار یادگیری Get-Help، Get-Command و Get-Member هستند.
+- پایپ‌لاین آبجکت منتقل می‌کند؛ سه‌گانه Where-Object / Sort-Object / Select-Object ستون فقرات فیلتر است.
+- مقایسه‌ها با عملگرهای حرفی (-eq، -like، -match) و متغیرها با $ شروع می‌شوند.
+- Execution Policy سیاست شروع اسکریپت است؛ RemoteSigned انتخاب متعارف و «حفاظ نه مرز امنیتی» تمایز آزمونی است.
+
+برای تمرین: با `Get-Command -Verb Get` بیست Cmdlet کشف کنید و سه‌تایی‌شان را با Get-Help و مثال‌ها اجرا کنید؛ سپس سرویس‌های Automatic ولی خاموش را با یک پایپ‌لاین سه‌خطی فهرست کنید. از درس بعد وارد اسکریپت‌نویسی واقعی می‌شویم.

@@ -1,0 +1,99 @@
+---
+slug: directory-services
+path: linux-lpic3
+title: "سرویس‌های دایرکتوری: LDAP و Samba AD"
+summary: "معماری دایرکتوری و DN و Schema، OpenLDAP و فایل‌های LDIF، Kerberos و راه‌اندازی Samba به‌عنوان دامین‌کنترلر"
+duration: 15
+order: 1
+---
+
+در سطح LPIC-3 (تخصص 300: Mixed Environments) موضوع اصلی یک سؤال بزرگ است: «هزار کاربر و هزار ماشین را چطور از یک نقطه مدیریت کنیم؟» پاسخ، سرویس دایرکتوری است: یک پایگاه توزیع‌شده و درختی از هویت‌ها که همان نقشی را در شبکه سازمانی دارد که `/etc/passwd` در یک سرور دارد. این درس معماری LDAP، پیاده‌سازی OpenLDAP و ورود Samba به دنیای Active Directory را پوشش می‌دهد.
+
+## مدل دایرکتوری: درخت اطلاعات
+
+LDAP (Lightweight Directory Access Protocol) داده‌ها را در یک درخت به نام **DIT** نگه می‌دارد. هر گره یک **Entry** است و آدرس یکتای هر entry، **DN** نام دارد:
+
+```
+dn: uid=reza,ou=people,dc=example,dc=org
+```
+
+این DN از راست به چپ خوانده می‌شود: ریشه دامنه `example.org`، زیرش واحد سازمانی people و سپس کاربر reza. هر entry از **Attribut**ها ساخته شده (cn، uid، mail و…) و ساختار مجاز این ویژگی‌ها در **Schema** تعریف می‌شود. سه مفهوم پایه که آزمون مدام می‌پرسد:
+
+- **Root DN / Suffix:** ریشه درخت؛ مثل `dc=example,dc=org`.
+- **Schema:** قانون این‌که هر شیء چه ویژگی‌هایی می‌تواند/باید داشته باشد (ObjectClassها).
+- **Search Filter:** زبان جستجو؛ مثل `(objectClass=person)` یا `(&(uid=reza)(mail=*@example.org))` — پرانتزها اجباری‌اند و `&` به‌معنای «و» و `|` به‌معنای «یا».
+
+هر کسی که به دایرکتوری وصل می‌شود، یا Anonymous است یا یک entry معتبر با رمز (_bind DN_). برای امنیت، اتصال از TLS (پورت 636 با ldaps) استفاده می‌کند؛ پورت 389 اتصال معمولی است.
+
+## OpenLDAP در عمل
+
+سرور OpenLDAP با **slapd** اجرا می‌شود و پیکربندی آن خودش یک دایرکتوری است: `cn=config` (به‌جای ویرایش فایل متنی، ACLها و schemaها با ldapmodify اعمال می‌شوند).
+
+```bash
+sudo apt install slapd ldap-utils     # در نصب، پسورد admin و suffix می‌پرسد
+ldapsearch -x -b dc=example,dc=org uid=reza     # جستجو (-x: بدون SASL)
+```
+
+اضافه‌کردن entry با فایل **LDIF** (قالب متنی استاندارد LDAP):
+
+```ldif
+# user-reza.ldif
+dn: uid=reza,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+uid: reza
+cn: Reza Ahmadi
+sn: Ahmadi
+mail: reza@example.org
+userPassword: {SSHA}...
+```
+
+```bash
+ldapadd -x -D "cn=admin,dc=example,dc=org" -W -f user-reza.ldif
+ldapmodify -x -D "cn=admin,dc=example,dc=org" -W -f change-mail.ldif
+ldapdelete "uid=old,ou=people,dc=example,dc=org" -x -D cn=admin,dc=example,dc=org -W
+```
+
+- **پشتیبان‌گیری:** خروجی کامل دایرکتوری با `slapcat -l backup.ldif` و بازگردانی با `slapadd` (فقط وقتی slapd خاموش است) — سؤال تکرارشونده آزمون.
+- **Index:** برای جستجوی سریع روی ویژگی‌های پرتکرار (uid، mail) index تعریف کنید وگرنه با هزاران کاربر جستجو زمین می‌زند.
+
+## Kerberos: کارت تیکت واحد
+
+**Kerberos** پروتکل احراز هویت شبکه است که با ایده «بعد از یک بار ورود، همه سرویس‌ها اعتماد می‌کنند» (Single Sign-On) کار می‌کند. سه بازیگر دارد: کلاینت، **KDC** (سرور صدور بلیت: شامل AS و TGS) و سرویس مقصد. جریان کار:
+
+1. کلاینت از AS یک **TGT** (بلیت اولیه) می‌گیرد.
+2. با TGT از TGS **Service Ticket** برای سرویس موردنظر می‌گیرد.
+3. سرویس بلیت را اعتبارسنجی می‌کند — بدون این‌که رمز کاربر اصلاً به سرویس برسد.
+
+ساعت سرورها باید هم‌گام باشد (اختلاف بیش از ۵ دقیقه کل کار را می‌شکند) و ابزارهای کلاینت `kinit` (گرفتن TGT)، `klist` (دیدن بلیت‌ها) و `kdestroy` (پاک‌کردن) هستند. آزمون این سه ابزار و مفهوم realm (دامنه Kerberos، مثل EXAMPLE.ORG با حروف بزرگ) را می‌خواهد.
+
+## Samba به‌عنوان دامین‌کنترلر
+
+از نسخه 4، سمت فلسفه Samba کار می‌کند؛ یعنی می‌تواند مثل یک **Active Directory Domain Controller** عمل کند: Kerberos واقعی، DNS یکپارچه و سازگاری کامل با کلاینت‌های ویندوز. این همان سناریوی «محیط ترکیبی» (Mixed Environment) است که تخصص 300 رویش بنا شده.
+
+```bash
+sudo samba-tool domain provision --realm=SMB.EXAMPLE.ORG \
+  --domain=SMB --server-role=dc --dns-backend=SAMBA_INTERNAL
+sudo systemctl enable --now samba-ad-dc
+sudo samba-tool user add reza 'Complex#Pass1'      # ساخت کاربر دامنه
+sudo samba-tool domain level show                   # سطح عملکردی دامنه
+```
+
+کلاینت لینوکسی هم برای عضویت در دامنه از `realm join` (با SSSD) استفاده می‌کند:
+
+```bash
+sudo realm join smb.example.org -U Administrator
+id reza@smb.example.org      # کاربر دامنه، شناخته‌شده در سرور لینوکسی!
+```
+
+- **SSSD** حافظه پنهان هویت دامنه را در کلاینت نگه می‌دارد تا حتی با قطع شبکه، ورود آفلاین هم ممکن باشد — مفهومی که آزمون از آن می‌پرسد.
+- تصمیم معماری کلاسیک: OpenLDAP سبک و مناسب سناریوهای ساده و nss/PAM؛ Samba AD وقتی کلاینت‌های ویندوز در میان هستند و سازگاری کامل AD می‌خواهید.
+
+## جمع‌بندی
+
+- دایرکتوری یک درخت entry با DN یکتاست؛ ساختار ویژگی‌ها با Schema و جستجو با فیلترهای پرانتزدار انجام می‌شود.
+- OpenLDAP با slapd و قالب LDIF اداره می‌شود؛ پشتیبان با `slapcat` و جستجو با `ldapsearch -x -b`.
+- Kerberos با TGT و Service Ticket Single Sign-On می‌دهد؛ ساعت‌ها باید هم‌گام و ابزارها kinit/klist هستند.
+- Samba 4+ یک AD DC کامل است: provision با samba-tool و عضویت کلاینت لینوکسی با realm join + SSSD.
+- انتخاب معماری: LDAP ساده برای سناریوهای یونیکسی، Samba AD برای محیط ترکیبی با ویندوز.
+
+برای تمرین: یک OpenLDAP کوچک با ۳ کاربر بسازید و با ldapsearch و فیلترهای ترکیبی جستجو کنید؛ بعد اگر فرصت داشتید، provision یک Samba AD در ماشین مجازی بزنید و با یک کلاینت دومی realm join کنید. این آزمایشگاه، قلب آزمون 300 است.

@@ -61,5 +61,68 @@
     "color": "indigo",
     "order": 7,
     "lessonSlugs": ["sre-principles", "iac-terraform", "incident-postmortem"]
+  },
+  {
+    "id": "linux-lpic1",
+    "title": "لینوکس LPIC-1",
+    "description": "سطح ورودی استاندارد LPI: خط فرمان لینوکس، مدیریت فایل‌ها و مجوزها، کاربران و فرآیندها و سرویس‌های systemd.",
+    "icon": "Terminal",
+    "color": "green",
+    "order": 8,
+    "lessonSlugs": ["linux-philosophy", "files-permissions", "users-processes"]
+  },
+  {
+    "id": "linux-lpic2",
+    "title": "لینوکس LPIC-2",
+    "description": "سطح حرفه‌ای LPI: دیسک و LVM و RAID، شبکه و سرویس‌های لینوکس (SSH، وب‌سرور، DNS) و امنیت سیستم.",
+    "icon": "HardDrive",
+    "color": "emerald",
+    "order": 9,
+    "lessonSlugs": ["disks-lvm", "linux-networking", "services-security"]
+  },
+  {
+    "id": "linux-lpic3",
+    "title": "لینوکس LPIC-3",
+    "description": "بالاترین سطح LPI (تخصص Mixed Environment): دایرکتوری LDAP و Samba AD، مجازی‌سازی و کانتینر و خودکارسازی در مقیاس سازمانی.",
+    "icon": "Server",
+    "color": "lime",
+    "order": 10,
+    "lessonSlugs": ["directory-services", "virtualization-containers", "automation-scale"]
+  },
+  {
+    "id": "mcsa",
+    "title": "ویندوز سرور MCSA",
+    "description": "مسیر کلاسیک ادمین ویندوز: نصب و مدیریت Windows Server، اکتیو دایرکتوری و Group Policy و سرویس‌های شبکه (DHCP، DNS، فایل‌سرور).",
+    "icon": "AppWindow",
+    "color": "blue",
+    "order": 11,
+    "lessonSlugs": ["winserver-install", "active-directory", "winserver-services"]
+  },
+  {
+    "id": "mikrotik",
+    "title": "میکروتیک MTCNA",
+    "description": "کار عملی با RouterOS: پیکربندی اولیه و Winbox، فایروال و NAT، مدیریت پهنای باند و وایرلس؛ آمادگی آزمون MTCNA.",
+    "icon": "Wifi",
+    "color": "orange",
+    "order": 12,
+    "lessonSlugs": ["routeros-basics", "mikrotik-firewall-nat", "mikrotik-bandwidth-wifi"]
+  },
+  {
+    "id": "ccna",
+    "title": "سیسکو CCNA",
+    "description": "پرتقاضاترین مدرک شبکه: سوئیچینگ و VLAN، مسیریابی و OSPF، ACL و NAT و پایه‌های اتوماسیون؛ هم‌راستا با آزمون 200-301.",
+    "icon": "Cable",
+    "color": "cyan",
+    "order": 13,
+    "lessonSlugs": ["switching-vlan", "routing-ospf", "ccna-security-automation"]
+  },
+  {
+    "id": "powershell",
+    "title": "پاورشل PowerShell",
+    "description": "اتوماسیون ویندوز با پاورشل: Cmdletها و پایپ‌لاین شیءگرا، اسکریپت‌نویسی و مدیریت سیستم و اکتیو دایرکتوری از خط فرمان.",
+    "icon": "SquareTerminal",
+    "color": "purple",
+    "order": 14,
+    "lessonSlugs": ["powershell-start", "powershell-scripting", "powershell-admin"]
   }
 ]
