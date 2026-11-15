@@ -118,29 +118,40 @@ check(gitRule && gitRule.matches.some((m) => m.args === "status"), "قاعده g
 /* ------------------------------- نقشه راه ------------------------------- */
 const roadmap = JSON.parse(fs.readFileSync(path.join(contentDir, "roadmap.json"), "utf-8"));
 check(typeof roadmap.intro === "string" && roadmap.intro.length > 20, "مقدمه نقشه راه کوتاه است");
-check(typeof roadmap.standardsNote === "string" && roadmap.standardsNote.length > 20, "توضیح مبنا (standardsNote) نقشه راه کوتاه است");
-check(Array.isArray(roadmap.levels) && roadmap.levels.length === 4, `نقشه راه باید دقیقاً ۴ مرحله داشته باشد (فعلاً: ${roadmap.levels?.length ?? 0})`);
+check(Array.isArray(roadmap.tracks) && roadmap.tracks.length >= 2, `نقشه راه باید حداقل ۲ مسیر شغلی داشته باشد (فعلاً: ${roadmap.tracks?.length ?? 0})`);
+const trackIds = new Set();
 const levelIds = new Set();
-for (const level of roadmap.levels ?? []) {
-  check(levelIds.has(level.id) === false, `شناسه مرحله تکراری در نقشه راه: ${level.id}`);
-  levelIds.add(level.id);
-  check(Number.isInteger(level.order) && level.order >= 1 && level.order <= 4, `ترتیب مرحله ${level.id} باید ۱ تا ۴ باشد`);
-  check(typeof level.title === "string" && level.title.length > 2, `عنوان مرحله ${level.id} نامعتبر است`);
-  check(typeof level.englishTitle === "string" && level.englishTitle.length > 2, `عنوان انگلیسی مرحله ${level.id} نامعتبر است`);
-  check(typeof level.duration === "string" && level.duration.length > 2, `مدت مرحله ${level.id} نامعتبر است`);
-  check(typeof level.summary === "string" && level.summary.length > 30, `توضیح مرحله ${level.id} کوتاه است`);
-  check(Array.isArray(level.skills) && level.skills.length >= 4, `مرحله ${level.id} باید حداقل ۴ مهارت داشته باشد`);
-  check(Array.isArray(level.certifications) && level.certifications.length >= 2, `مرحله ${level.id} باید حداقل ۲ مدرک جهانی داشته باشد`);
-  for (const cert of level.certifications ?? []) {
-    check(typeof cert.name === "string" && cert.name.length > 1, `نام مدرک در مرحله ${level.id} نامعتبر است`);
-    check(typeof cert.issuer === "string" && cert.issuer.length > 1, `نهاد صدور مدرک ${cert.name} نامعتبر است`);
-    check(typeof cert.note === "string" && cert.note.length > 5, `توضیح مدرک ${cert.name} کوتاه است`);
-  }
-  check(Array.isArray(level.relatedPathIds), `relatedPathIds مرحله ${level.id} باید آرایه باشد`);
-  for (const pid of level.relatedPathIds ?? []) {
-    check(validPathIds.has(pid), `مسیر مرتبط نامعتبر در مرحله ${level.id}: ${pid}`);
+for (const track of roadmap.tracks ?? []) {
+  check(trackIds.has(track.id) === false, `شناسه مسیر شغلی تکراری در نقشه راه: ${track.id}`);
+  trackIds.add(track.id);
+  check(typeof track.title === "string" && track.title.length > 2, `عنوان مسیر شغلی ${track.id} نامعتبر است`);
+  check(typeof track.englishTitle === "string" && track.englishTitle.length > 2, `عنوان انگلیسی مسیر ${track.id} نامعتبر است`);
+  check(typeof track.tagline === "string" && track.tagline.length > 5, `تگ‌لاین مسیر ${track.id} کوتاه است`);
+  check(typeof track.intro === "string" && track.intro.length > 20, `مقدمه مسیر ${track.id} کوتاه است`);
+  check(typeof track.standardsNote === "string" && track.standardsNote.length > 20, `توضیح مبنا (standardsNote) مسیر ${track.id} کوتاه است`);
+  check(Array.isArray(track.levels) && track.levels.length === 4, `مسیر ${track.id} باید دقیقاً ۴ مرحله داشته باشد (فعلاً: ${track.levels?.length ?? 0})`);
+  for (const level of track.levels ?? []) {
+    check(levelIds.has(level.id) === false, `شناسه مرحله تکراری در نقشه راه: ${level.id}`);
+    levelIds.add(level.id);
+    check(Number.isInteger(level.order) && level.order >= 1 && level.order <= 4, `ترتیب مرحله ${level.id} باید ۱ تا ۴ باشد`);
+    check(typeof level.title === "string" && level.title.length > 2, `عنوان مرحله ${level.id} نامعتبر است`);
+    check(typeof level.englishTitle === "string" && level.englishTitle.length > 2, `عنوان انگلیسی مرحله ${level.id} نامعتبر است`);
+    check(typeof level.duration === "string" && level.duration.length > 2, `مدت مرحله ${level.id} نامعتبر است`);
+    check(typeof level.summary === "string" && level.summary.length > 30, `توضیح مرحله ${level.id} کوتاه است`);
+    check(Array.isArray(level.skills) && level.skills.length >= 4, `مرحله ${level.id} باید حداقل ۴ مهارت داشته باشد`);
+    check(Array.isArray(level.certifications) && level.certifications.length >= 2, `مرحله ${level.id} باید حداقل ۲ مدرک جهانی داشته باشد`);
+    for (const cert of level.certifications ?? []) {
+      check(typeof cert.name === "string" && cert.name.length > 1, `نام مدرک در مرحله ${level.id} نامعتبر است`);
+      check(typeof cert.issuer === "string" && cert.issuer.length > 1, `نهاد صدور مدرک ${cert.name} نامعتبر است`);
+      check(typeof cert.note === "string" && cert.note.length > 5, `توضیح مدرک ${cert.name} کوتاه است`);
+    }
+    check(Array.isArray(level.relatedPathIds), `relatedPathIds مرحله ${level.id} باید آرایه باشد`);
+    for (const pid of level.relatedPathIds ?? []) {
+      check(validPathIds.has(pid), `مسیر مرتبط نامعتبر در مرحله ${level.id}: ${pid}`);
+    }
   }
 }
+check(trackIds.has("network") && trackIds.has("devops"), "هر دو مسیر شغلی network و devops باید وجود داشته باشند");
 
 /* ------------------------------- نتیجه ------------------------------- */
 if (errors.length > 0) {
@@ -154,5 +165,5 @@ if (errors.length > 0) {
   console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git})`);
   console.log(`  سؤالات آزمون: ${questions.length} (هر مسیر ۷ چهارگزینه‌ای + ۳ جای‌خالی)`);
   console.log(`  دستورات ترمینال: ${terminal.rules.length} (شامل ping google.com و git با زیردستورها)`);
-  console.log(`  نقشه راه: ${roadmap.levels.length} مرحله (${roadmap.levels.map((l) => l.title).join(" ← ")})`);
+  console.log(`  نقشه راه: ${roadmap.tracks.length} مسیر شغلی — ${roadmap.tracks.map((t) => `${t.title}: ${t.levels.map((l) => l.title).join(" ← ")}`).join(" | ")}`);
 }

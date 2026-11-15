@@ -124,5 +124,11 @@ export const getTerminalContent = cache((): TerminalContent => {
 
 export const getRoadmap = cache((): RoadmapContent => {
   const content = readJsonFile<RoadmapContent>("roadmap.json");
-  return { ...content, levels: [...content.levels].sort((a, b) => a.order - b.order) };
+  return {
+    ...content,
+    tracks: content.tracks.map((track) => ({
+      ...track,
+      levels: [...track.levels].sort((a, b) => a.order - b.order),
+    })),
+  };
 });

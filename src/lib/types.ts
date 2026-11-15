@@ -155,7 +155,7 @@ export interface RoadmapCertification {
   note: string;
 }
 
-/** یک مرحله از نقشه راه شغلی شبکه — منبع: content/roadmap.json */
+/** یک مرحله از نقشه راه شغلی — منبع: content/roadmap.json */
 export interface RoadmapLevel {
   /** شناسه یکتای مرحله مثل fundamentals */
   id: string;
@@ -177,14 +177,30 @@ export interface RoadmapLevel {
   relatedPathIds: PathId[];
 }
 
+/** یک مسیر شغلی کامل در نقشه راه (مثل «شبکه» یا «DevOps») */
+export interface RoadmapTrack {
+  /** شناسه یکتای مسیر مثل network یا devops */
+  id: string;
+  /** عنوان فارسی مسیر مثل «مسیر شبکه» */
+  title: string;
+  /** معادل انگلیسی عنوان (LTR) */
+  englishTitle: string;
+  /** توضیح کوتاه یک‌خطی مسیر (زیر عنوان در تب) */
+  tagline: string;
+  /** مقدمه فارسی این مسیر */
+  intro: string;
+  /** مبنا و ملاک مدارک جهانی این مسیر (پایین تایم‌لاین) */
+  standardsNote: string;
+  /** مرحله‌های این مسیر به ترتیب */
+  levels: RoadmapLevel[];
+}
+
 /** کل فایل roadmap.json */
 export interface RoadmapContent {
   /** مقدمه فارسی بالای صفحه نقشه راه */
   intro: string;
-  /** توضیح مبنا و ملاک بودن مدارک جهانی (پایین صفحه) */
-  standardsNote: string;
-  /** مرحله‌های نقشه راه به ترتیب */
-  levels: RoadmapLevel[];
+  /** مسیرهای شغلی موجود در نقشه راه (شبکه، DevOps و…) */
+  tracks: RoadmapTrack[];
 }
 
 /* ---------------------------------- پیشرفت کاربر ---------------------------------- */
