@@ -1,4 +1,13 @@
-import { GitBranch, Network, TerminalSquare, type LucideIcon } from "lucide-react";
+import {
+  Building2,
+  Container,
+  GitBranch,
+  Network,
+  Router,
+  TerminalSquare,
+  Workflow,
+  type LucideIcon,
+} from "lucide-react";
 
 /**
  * نگاشت نام آیکون ذخیره‌شده در paths.json به کامپوننت lucide-react.
@@ -8,6 +17,10 @@ const ICONS: Record<string, LucideIcon> = {
   Network,
   TerminalSquare,
   GitBranch,
+  Router,
+  Building2,
+  Container,
+  Workflow,
 };
 
 export function PathIcon({ name, className }: { name: string; className?: string }) {

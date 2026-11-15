@@ -25,5 +25,41 @@
     "color": "violet",
     "order": 3,
     "lessonSlugs": ["git-intro", "add-commit", "remote-github"]
+  },
+  {
+    "id": "network-specialist",
+    "title": "کارشناس شبکه",
+    "description": "سطح Professional مسیر شبکه: مسیریابی OSPF، VPN سایت‌به‌سایت و اتوماسیون شبکه با Ansible.",
+    "icon": "Router",
+    "color": "cyan",
+    "order": 4,
+    "lessonSlugs": ["ospf-routing", "site-to-site-vpn", "network-automation"]
+  },
+  {
+    "id": "network-manager",
+    "title": "مدیر شبکه",
+    "description": "از اجرا به مدیریت: طراحی معماری سازمانی، پایش و SLA، مدیریت تیم و بودجه بر پایه ITIL.",
+    "icon": "Building2",
+    "color": "rose",
+    "order": 5,
+    "lessonSlugs": ["network-design", "sla-monitoring", "itil-team-budget"]
+  },
+  {
+    "id": "devops-engineer",
+    "title": "کارشناس DevOps",
+    "description": "هسته فنی DevOps: کانتینر با Docker، ارکستراسیون Kubernetes و پایپ‌لاین CI/CD.",
+    "icon": "Container",
+    "color": "sky",
+    "order": 6,
+    "lessonSlugs": ["docker-containers", "kubernetes-intro", "cicd-pipeline"]
+  },
+  {
+    "id": "devops-architect",
+    "title": "معمار DevOps / SRE",
+    "description": "سطح ارشد مسیر DevOps: اصول SRE و SLI/SLO، زیرساخت به‌صورت کد و مدیریت رخداد حرفه‌ای.",
+    "icon": "Workflow",
+    "color": "indigo",
+    "order": 7,
+    "lessonSlugs": ["sre-principles", "iac-terraform", "incident-postmortem"]
   }
 ]

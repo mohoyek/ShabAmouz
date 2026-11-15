@@ -4,7 +4,8 @@ import { getLearningPaths, getLessonsForPath } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "مسیرهای یادگیری",
-  description: "سه مسیر کوتاه برای یادگیری مبانی شبکه، دستورات CMD و گیت؛ به فارسی و رایگان.",
+  description:
+    "هفت مسیر کوتاه برای یادگیری مبانی شبکه تا مدیریت شبکه و مسیر کامل DevOps؛ به فارسی و رایگان.",
 };
 
 export default function CoursesPage() {

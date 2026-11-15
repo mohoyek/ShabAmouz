@@ -6,11 +6,18 @@
 
 /* ---------------------------------- مسیر یادگیری ---------------------------------- */
 
-/** شناسه‌های سه مسیر یادگیری (فقط این سه مقدار مجاز است) */
-export type PathId = "network-basics" | "cmd-basics" | "git-basics";
+/** شناسه‌های مسیرهای یادگیری (فقط این مقادیر مجاز است) */
+export type PathId =
+  | "network-basics"
+  | "cmd-basics"
+  | "git-basics"
+  | "network-specialist"
+  | "network-manager"
+  | "devops-engineer"
+  | "devops-architect";
 
-/** کلید رنگ مسیر — نگاشت به کلاس‌های Tailwind در components/path-styles.ts انجام می‌شود */
-export type ColorKey = "teal" | "amber" | "violet";
+/** کلید رنگ مسیر — نگاشت به کلاس‌های Tailwind در lib/path-styles.ts انجام می‌شود */
+export type ColorKey = "teal" | "amber" | "violet" | "cyan" | "rose" | "sky" | "indigo";
 
 /** متادیتای یک مسیر یادگیری — منبع: content/paths.json */
 export interface LearningPath {

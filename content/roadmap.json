@@ -103,7 +103,7 @@
               "note": "مسیریابی و اتصال‌دهی حرفه‌ای در اکوسیستم MikroTik"
             }
           ],
-          "relatedPathIds": []
+          "relatedPathIds": ["network-specialist"]
         },
         {
           "id": "manager",
@@ -142,7 +142,7 @@
               "note": "معادل سطح Expert در اکوسیستم Juniper برای شبکه سازمانی"
             }
           ],
-          "relatedPathIds": []
+          "relatedPathIds": ["network-manager"]
         }
       ]
     },
@@ -254,7 +254,7 @@
               "note": "مدرک DevOps سطح Professional در اکوسیستم ابری که انتخاب کرده‌اید"
             }
           ],
-          "relatedPathIds": []
+          "relatedPathIds": ["devops-engineer"]
         },
         {
           "id": "devops-architect",
@@ -288,7 +288,7 @@
               "note": "زبان مشترک مدیریت سرویس با تیم‌های عملیات و سازمان"
             }
           ],
-          "relatedPathIds": []
+          "relatedPathIds": ["devops-architect"]
         }
       ]
     }

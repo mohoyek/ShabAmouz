@@ -1,9 +1,9 @@
 /**
  * اعتبارسنجی فایل‌های محتوا — شب‌آموز
  * اجرا: node scripts/validate-content.mjs
- * بررسی می‌کند: تعداد مسیرها (۳)، درس‌ها (۹)، دستورات مرجع (۱۵) در سه دسته
- * ۵تایی، سؤالات آزمون (۳۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
- * ۱۰ دستور ترمینال با قاعده ping google.com و نقشه راه ۴ مرحله‌ای.
+ * بررسی می‌کند: تعداد مسیرها (۷)، درس‌ها (۲۱)، دستورات مرجع (۱۵) در سه دسته
+ * ۵تایی، سؤالات آزمون (۷۰) با ترکیب ۷ چهارگزینه‌ای + ۳ جای‌خالی در هر مسیر،
+ * ۱۰ دستور ترمینال با قاعده ping google.com و نقشه راه دو مسیره ۴ مرحله‌ای.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -18,9 +18,17 @@ function check(condition, message) {
 
 /* ------------------------------- مسیرها ------------------------------- */
 const paths = JSON.parse(fs.readFileSync(path.join(contentDir, "paths.json"), "utf-8"));
-check(paths.length === 3, `تعداد مسیرها باید ۳ باشد (فعلاً: ${paths.length})`);
-const validColors = new Set(["teal", "amber", "violet"]);
-const validPathIds = new Set(["network-basics", "cmd-basics", "git-basics"]);
+check(paths.length === 7, `تعداد مسیرها باید ۷ باشد (فعلاً: ${paths.length})`);
+const validColors = new Set(["teal", "amber", "violet", "cyan", "rose", "sky", "indigo"]);
+const validPathIds = new Set([
+  "network-basics",
+  "cmd-basics",
+  "git-basics",
+  "network-specialist",
+  "network-manager",
+  "devops-engineer",
+  "devops-architect",
+]);
 for (const p of paths) {
   check(validPathIds.has(p.id), `شناسه مسیر نامعتبر: ${p.id}`);
   check(typeof p.title === "string" && p.title.length > 2, `عنوان مسیر ${p.id} نامعتبر است`);
@@ -46,7 +54,7 @@ for (const p of paths) {
     lessonCount++;
   }
 }
-check(lessonCount === 9, `تعداد کل درس‌ها باید ۹ باشد (فعلاً: ${lessonCount})`);
+check(lessonCount === 21, `تعداد کل درس‌ها باید ۲۱ باشد (فعلاً: ${lessonCount})`);
 
 /* ----------------------------- مرجع دستورات ----------------------------- */
 const commands = JSON.parse(fs.readFileSync(path.join(contentDir, "reference.json"), "utf-8"));
@@ -69,7 +77,7 @@ check(byCategory.git === 5, `دسته گیت باید ۵ دستور داشته �
 
 /* -------------------------------- آزمون -------------------------------- */
 const questions = JSON.parse(fs.readFileSync(path.join(contentDir, "quiz.json"), "utf-8"));
-check(questions.length === 30, `تعداد سؤالات باید ۳۰ باشد (فعلاً: ${questions.length})`);
+check(questions.length === 70, `تعداد سؤالات باید ۷۰ باشد (فعلاً: ${questions.length})`);
 const qIds = new Set();
 const perPath = {};
 for (const q of questions) {
@@ -160,7 +168,7 @@ if (errors.length > 0) {
   process.exit(1);
 } else {
   console.log("✓ اعتبارسنجی محتوا موفق بود:");
-  console.log(`  مسیرها: ${paths.length} (شبکه، CMD، گیت)`);
+  console.log(`  مسیرها: ${paths.length} (${paths.map((p) => p.title).join("، ")})`);
   console.log(`  درس‌ها: ${lessonCount} × MDX با فرانت‌متر معتبر`);
   console.log(`  مرجع دستورات: ${commands.length} (شبکه=${byCategory.network}, CMD=${byCategory.cmd}, گیت=${byCategory.git})`);
   console.log(`  سؤالات آزمون: ${questions.length} (هر مسیر ۷ چهارگزینه‌ای + ۳ جای‌خالی)`);

@@ -61,7 +61,7 @@ export default function HomePage() {
           متن‌باز، بدون ثبت‌نام؛ همه‌چیز در مرورگر شما می‌ماند
         </span>
         <h1 className="max-w-3xl text-3xl font-extrabold leading-[1.3] sm:text-4xl md:text-5xl">
-          یادگیری شبکه، خط فرمان و گیت
+          یادگیری شبکه، خط فرمان، گیت و DevOps
           <span className="block text-emerald-600 dark:text-emerald-400">به زبان ساده و فارسی</span>
         </h1>
         <p className="max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
@@ -109,7 +109,7 @@ export default function HomePage() {
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">مسیرهای یادگیری</h2>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-muted-foreground">
-            سه مسیر کوتاه و عملی؛ به ترتیب جلو بروید یا مستقیم سراغ چیزی بروید که لازم دارید.
+            مسیرهای کوتاه و عملی، از مبانی تا سطح کارشناس و مدیریت؛ به ترتیب جلو بروید یا مستقیم سراغ چیزی بروید که لازم دارید.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

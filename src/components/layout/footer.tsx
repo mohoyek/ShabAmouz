@@ -9,7 +9,7 @@ export function Footer() {
           <GraduationCap className="size-4 text-emerald-600" />
           <span className="font-bold text-foreground">شب‌آموز</span>
           <span aria-hidden="true">·</span>
-          <span>پلتفرم فارسی آموزش شبکه، خط فرمان و گیت</span>
+          <span>پلتفرم فارسی آموزش شبکه، خط فرمان، گیت و DevOps</span>
         </div>
         <nav className="flex items-center gap-4" aria-label="لینک‌های فوتر">
           <Link href="/courses" className="transition-colors hover:text-foreground">
